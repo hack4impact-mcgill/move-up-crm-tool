@@ -24,7 +24,6 @@ def get_all_mentors():
 
     list_of_mentors = []
     for r in response_json["records"]:
-        print(r["fields"])
         name = r["fields"].get("Name")
         email = r["fields"].get("Move Up Email")
         if name is not None and email is not None:
@@ -44,7 +43,6 @@ def get_all_clients():
 
     list_of_clients = []
     for r in response_json["records"]:
-        print(r["fields"])
         name = r["fields"].get("Name")
         notes = r["fields"].get("Notes")
         attachments = r["fields"].get("Attachments")
