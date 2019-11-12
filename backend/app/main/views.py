@@ -50,3 +50,23 @@ def get_all_clients():
             m = Client(name=name, notes=notes, attachments=attachments)
             list_of_clients.append(m.serialize())
     return jsonify(list_of_clients)
+
+# get a client from Airtable 
+@main.route("/clients/<id>", methods=["GET"])
+def get_a_client(id): 
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    if response.status_code == 200: 
+        response_json = response.json()
+        client = []
+        name = response_json["fields"].get("Name")
+        notes = response_json["fields"].get("Notes")
+        attachments = response_json["fields"].get("Attachments")
+        if name is not None: 
+            m = Client(name=name, notes=notes, attachments=attachments)
+            client.append(m.serialize())
+            return jsonify(client)
+    else: 
+        return "This client does not exist in the database."
