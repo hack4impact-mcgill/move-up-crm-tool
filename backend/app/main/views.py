@@ -4,8 +4,6 @@ import os
 from flask import Flask, jsonify, request, abort, make_response
 from app.models import Mentor, Client
 from . import main
-from .. import db
-
 
 # get all users
 @main.route("/", methods=["GET"])
