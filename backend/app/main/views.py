@@ -77,16 +77,14 @@ def get_a_client(id):
 def get_client_notes(id):
     # Regex used to check is string input is an email address
     regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
+    email_input = re.search(regex, id)
 
-    if (re.search(regex, id)):
+    if (email_input):
         # id is an email. Collect client notes by email
-        #  Client's Email
-        # Am i gonna have to retreive all client records and then search them?
-        # response = requests.get(
-        #     "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients{}".format(id),
-        #     headers={"Authorization": str(os.environ.get("API_KEY"))},
-        # )
-        response = {}
+        response = requests.get(
+            "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(id) + ", {Client Email})",
+            headers={"Authorization": str(os.environ.get("API_KEY"))},
+        )
     else:
         # Not an email, assume it's an id
         response = requests.get(
@@ -94,15 +92,17 @@ def get_client_notes(id):
             headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
 
-    # try:
-    response_json = response.json()
-    print(response_json, '\n')
-    # notes = response_json["fields"]["notes"]
-    notes = response_json["notes"]
-    # except:
-    #     # invlaid input
-    #     # Update status code
-    #     pass
+    if response.status_code == 200:
+        response_json = response.json()
 
-    return notes
-    
+        notes = []
+        if email_input:
+            for r in response_json["records"]:
+                notes.append(r["fields"].get("Notes"))
+        else:
+            notes.append(response_json["fields"]["Notes"])
+        # Return accepted status
+        return jsonify(notes), 200
+
+    # Failed to read json
+    return "Server failed to get client's notes", 400
