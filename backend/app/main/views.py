@@ -72,3 +72,29 @@ def get_a_client(id):
             return jsonify(client)
     else: 
         return "This client does not exist in the database."
+
+
+# get a client from Airtable using client's email 
+@main.route("/clients/email/<email>", methods = ["GET"])
+def get_a_client_from_email(email): 
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(email) + ", {Client Email})", 
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    response_json = response.json()
+
+    list_of_clients = []
+    for r in response_json["records"]:
+        name = r["fields"].get("Name")
+        notes = r["fields"].get("Notes")
+        attachments = r["fields"].get("Attachments")
+        if name is not None:
+            m = Client(name=name, notes=notes, attachments=attachments)
+            list_of_clients.append(m.serialize())
+            return jsonify(list_of_clients)
+    else: 
+        return "There is no client with that email, please try again."
+
+
+
+
