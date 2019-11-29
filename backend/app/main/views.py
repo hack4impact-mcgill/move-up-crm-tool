@@ -30,6 +30,26 @@ def get_all_mentors():
     return jsonify(list_of_mentors)
 
 
+# get a mentor by email from Airtable
+@main.route("/mentors/<email>", methods=["GET"])
+def get_mentor_by_email(email):
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors?filterByFormula=SEARCH('{}'".format(
+            email) + ", {Move Up Email})",
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    if response.status_code == 200:
+        response_json = response.json()
+        mentor = response_json["records"][0]
+        name = mentor["fields"].get("Name")
+        email = mentor["fields"].get("Move Up Email")
+        if name is not None:
+            m = Mentor(name=name, email=email)
+            return jsonify(m.serialize())
+    else:
+        return "There is no mentor with that email, please try again."
+
+
 # get all clients from Airtable
 @main.route("/clients", methods=["GET"])
 def get_all_clients():
@@ -53,12 +73,12 @@ def get_all_clients():
 # get a client from Airtable 
 @main.route("/clients/<id>", methods=["GET"])
 def get_a_client(id):
-    response = requests.get( 
+    response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     print(response.status_code)
-    if response.status_code == 200: 
+    if response.status_code == 200:
         response_json = response.json()
         client = []
         name = response_json["fields"].get("Name")
@@ -68,5 +88,5 @@ def get_a_client(id):
             m = Client(name=name, notes=notes, attachments=attachments)
             client.append(m.serialize())
             return jsonify(client)
-    else: 
+    else:
         return "This client does not exist in the database."
