@@ -19,8 +19,6 @@ def get_all_mentors():
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     response_json = response.json()
-    return str(response.json())
-
     list_of_mentors = []
     for r in response_json["records"]:
         name = r["fields"].get("Name")
@@ -77,8 +75,6 @@ def get_all_clients():
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     response_json = response.json()
-    return str(response.json())
-
     list_of_clients = []
     for r in response_json["records"]:
         name = r["fields"].get("Name")
