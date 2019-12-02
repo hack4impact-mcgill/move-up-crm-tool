@@ -34,5 +34,8 @@ class Client(User):
             "attachments": self.attachments
         }
 
+class Volunteer:
+    pass
+    
 class Donor(User):
     pass
