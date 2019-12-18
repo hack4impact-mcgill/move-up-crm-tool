@@ -75,7 +75,7 @@ def get_a_client(id):
 # Gets list of client notes based on clientid or email
 @main.route("/notes/<id>", methods=["GET"])
 def get_client_notes(id):
-    # Regex used to check is string input is an email address
+    # Regex used to check if string input is an email address
     regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
     email_input = re.search(regex, id)
 
@@ -87,6 +87,8 @@ def get_client_notes(id):
         )
     else:
         # Not an email, assume it's an id
+        # Check that it's an id. Ids are a-zA-Z0-9 of length
+
         response = requests.get(
             "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
             headers={"Authorization": str(os.environ.get("API_KEY"))},
