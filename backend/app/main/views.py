@@ -78,7 +78,6 @@ def get_all_clients():
     response_json = response.json()
     list_of_clients = []
     for r in response_json["records"]:
-        print(r)
         name = r["fields"].get("Name")
         notes = r["fields"].get("Notes")
         email = r["fields"].get("Client Email")
