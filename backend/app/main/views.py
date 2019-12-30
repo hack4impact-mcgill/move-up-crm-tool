@@ -78,11 +78,13 @@ def get_all_clients():
     response_json = response.json()
     list_of_clients = []
     for r in response_json["records"]:
+        print(r)
         name = r["fields"].get("Name")
         notes = r["fields"].get("Notes")
+        email = r["fields"].get("Client Email")
         attachments = r["fields"].get("Attachments")
         if name is not None:
-            m = Client(name=name, notes=notes, attachments=attachments)
+            m = Client(name=name, email=email, notes=notes, attachments=attachments)
             list_of_clients.append(m.serialize())
     return jsonify(list_of_clients)
 
@@ -99,9 +101,10 @@ def get_a_client(id):
         client = []
         name = response_json["fields"].get("Name")
         notes = response_json["fields"].get("Notes")
+        email = response_json["fields"].get("Client Email")
         attachments = response_json["fields"].get("Attachments")
         if name is not None:
-            m = Client(name=name, notes=notes, attachments=attachments)
+            m = Client(name=name, email=email, notes=notes, attachments=attachments)
             client.append(m.serialize())
             return jsonify(client)
     else:
@@ -114,20 +117,24 @@ def get_client_notes(id):
     regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
     email_input = re.search(regex, id)
 
+    regex = '^[A-Za-z0-9_()]{17}$'
+    id_input = re.search(regex, id)
+
     if (email_input):
         # id is an email. Collect client notes by email
         response = requests.get(
             "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(id) + ", {Client Email})",
             headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
-    else:
-        # Not an email, assume it's an id
-        # Check that it's an id. Ids are a-zA-Z0-9 of length
-
+    elif (id_input):
+        # id is an id. Collect notes by id
         response = requests.get(
             "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
             headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
+    else:
+        # Return failure
+        return "Bad id/email", 400
 
     if response.status_code == 200:
         response_json = response.json()
@@ -142,4 +149,4 @@ def get_client_notes(id):
         return jsonify(notes), 200
 
     # Failed to read json
-    return "Server failed to get client's notes", 400
+    return "Failed to get client's notes", 400
