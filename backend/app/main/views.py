@@ -1,6 +1,7 @@
 import datetime
 import requests
 import os
+import re
 from flask import Flask, jsonify, request, abort, make_response
 from app.models import Mentor, Client
 from . import main
@@ -79,9 +80,10 @@ def get_all_clients():
     for r in response_json["records"]:
         name = r["fields"].get("Name")
         notes = r["fields"].get("Notes")
+        email = r["fields"].get("Client Email")
         attachments = r["fields"].get("Attachments")
         if name is not None:
-            m = Client(name=name, notes=notes, attachments=attachments)
+            m = Client(name=name, email=email, notes=notes, attachments=attachments)
             list_of_clients.append(m.serialize())
     return jsonify(list_of_clients)
 
@@ -98,10 +100,52 @@ def get_a_client(id):
         client = []
         name = response_json["fields"].get("Name")
         notes = response_json["fields"].get("Notes")
+        email = response_json["fields"].get("Client Email")
         attachments = response_json["fields"].get("Attachments")
         if name is not None:
-            m = Client(name=name, notes=notes, attachments=attachments)
+            m = Client(name=name, email=email, notes=notes, attachments=attachments)
             client.append(m.serialize())
             return jsonify(client)
     else:
         return "This client does not exist in the database."
+
+# Gets list of client notes based on clientid or email
+@main.route("/notes/<id>", methods=["GET"])
+def get_client_notes(id):
+    # Regex used to check if string input is an email address
+    regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
+    email_input = re.search(regex, id)
+
+    regex = '^[A-Za-z0-9_()]{17}$'
+    id_input = re.search(regex, id)
+
+    if (email_input):
+        # id is an email. Collect client notes by email
+        response = requests.get(
+            "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(id) + ", {Client Email})",
+            headers={"Authorization": str(os.environ.get("API_KEY"))},
+        )
+    elif (id_input):
+        # id is an id. Collect notes by id
+        response = requests.get(
+            "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
+            headers={"Authorization": str(os.environ.get("API_KEY"))},
+        )
+    else:
+        # Return failure
+        return "Bad id/email", 400
+
+    if response.status_code == 200:
+        response_json = response.json()
+
+        notes = []
+        if email_input:
+            for r in response_json["records"]:
+                notes.append(r["fields"].get("Notes"))
+        else:
+            notes.append(response_json["fields"]["Notes"])
+        # Return accepted status
+        return jsonify(notes), 200
+
+    # Failed to read json
+    return "Failed to get client's notes", 400
