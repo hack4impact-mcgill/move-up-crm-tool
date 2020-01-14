@@ -91,7 +91,7 @@ def get_all_clients():
     return jsonify(list_of_clients)
 
 
-#  get a client from Airtable
+# get a client from Airtable
 @main.route("/clients/<id>", methods=["GET"])
 def get_a_client(id):
     response = requests.get(
@@ -158,9 +158,10 @@ def get_client_notes(id):
     return "Failed to get client's notes", 400
 
 
+# send emails by calling send_mail from email.py
 @main.route("/send-email", methods=["POST"])
 def send_mail():
-
+    # get email recipients and subject from the POST request
     data = request.get_json(force=True)
     recipients = data.get("recipients")
     subject = data.get("subject")
