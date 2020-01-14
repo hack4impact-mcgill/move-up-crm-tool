@@ -4,6 +4,7 @@ import os
 import re
 from flask import Flask, jsonify, request, abort, make_response
 from app.models import Mentor, Client
+from app.email import send_email
 from . import main
 
 # get all users
@@ -53,7 +54,9 @@ def get_mentor_by_id(id):
 def get_mentor_by_email(email):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors?filterByFormula=SEARCH('{}'".format(
-            email) + ", {Move Up Email})",
+            email
+        )
+        + ", {Move Up Email})",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     if response.status_code == 200:
@@ -88,7 +91,7 @@ def get_all_clients():
     return jsonify(list_of_clients)
 
 
-# get a client from Airtable 
+#  get a client from Airtable
 @main.route("/clients/<id>", methods=["GET"])
 def get_a_client(id):
     response = requests.get(
@@ -109,23 +112,27 @@ def get_a_client(id):
     else:
         return "This client does not exist in the database."
 
+
 # Gets list of client notes based on clientid or email
 @main.route("/notes/<id>", methods=["GET"])
 def get_client_notes(id):
     # Regex used to check if string input is an email address
-    regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
+    regex = "^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
     email_input = re.search(regex, id)
 
-    regex = '^[A-Za-z0-9_()]{17}$'
+    regex = "^[A-Za-z0-9_()]{17}$"
     id_input = re.search(regex, id)
 
-    if (email_input):
+    if email_input:
         # id is an email. Collect client notes by email
         response = requests.get(
-            "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(id) + ", {Client Email})",
+            "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
+                id
+            )
+            + ", {Client Email})",
             headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
-    elif (id_input):
+    elif id_input:
         # id is an id. Collect notes by id
         response = requests.get(
             "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
@@ -149,3 +156,17 @@ def get_client_notes(id):
 
     # Failed to read json
     return "Failed to get client's notes", 400
+
+
+@main.route("/send-email", methods=["POST"])
+def send_mail():
+
+    data = request.get_json(force=True)
+    recipients = data.get("recipients")
+    subject = data.get("subject")
+
+    if recipients is None or subject is None:
+        abort(400, "Recipient(s) and subject cannot be empty")
+
+    send_email(recipients, subject)
+    return "message sent!"
