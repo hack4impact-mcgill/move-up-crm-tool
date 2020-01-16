@@ -16,4 +16,3 @@ def send_email(recipients, subject, **kwargs):
 
         msg.html = render_template("test.html")
         mail.send(msg)
-
