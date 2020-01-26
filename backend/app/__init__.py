@@ -1,9 +1,8 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-
+from flask_mail import Mail
 from config import config
 
-db = SQLAlchemy()
+mail = Mail()
 
 
 def create_app(config_name):
@@ -11,8 +10,8 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    # call init_app to complete initialization
-    db.init_app(app)
+    # set up Flask Mail extension
+    mail.init_app(app)
 
     from .main import main as main_blueprint
 
