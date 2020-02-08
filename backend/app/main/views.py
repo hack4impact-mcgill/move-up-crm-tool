@@ -3,7 +3,7 @@ import requests
 import os
 import re
 from flask import Flask, jsonify, request, abort, make_response
-from app.models import Mentor, Client
+from app.models import Mentor, Client, Donor
 from app.email import send_email
 from . import main
 
@@ -198,3 +198,65 @@ def send_mail():
 
     send_email(recipients, subject)
     return "message sent!"
+
+# get all donors from Airtable
+@main.route("/donors", methods=["GET"])
+def get_all_donors():
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors",
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    response_json = response.json()
+    list_of_donors = []
+    for r in response_json["records"]:
+        name = r["fields"].get("Name")
+        notes = r["fields"].get("Notes")
+        email = r["fields"].get("Donor Email")
+        attachments = r["fields"].get("Attachments")
+        donations = r["fields"].get("Donations")
+        if name is not None:
+            m = Donor(name=name, email=email, notes=notes, attachments=attachments, donations=donations)
+            list_of_donors.append(m.serialize())
+    return jsonify(list_of_donors)
+
+# get a donor from Airtable
+@main.route("/donors/<id>", methods=["GET"])
+def get_a_donor(id):
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors/{}".format(id),
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    if response.status_code == 200:
+        r = response.json()
+        name = r["fields"].get("Name")
+        notes = r["fields"].get("Notes")
+        email = r["fields"].get("Donor Email")
+        attachments = r["fields"].get("Attachments")
+        donations = r["fields"].get("Donations")
+        if name is not None:
+            m = Donor(name=name, email=email, notes=notes, attachments=attachments, donations=donations)
+            return jsonify((m.serialize()))
+    else:
+        return "This donor does not exist in the database."
+
+
+# get a donor from Airtable using donor's email 
+@main.route("/donors/email/<email>", methods = ["GET"])
+def get_a_donor_from_email(email): 
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors?filterByFormula=SEARCH('{}'".format(email) + ", {Donor Email})", 
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    if response.status_code == 200:
+        response_json = response.json()
+    for r in response_json["records"]:
+        name = r["fields"].get("Name")
+        notes = r["fields"].get("Notes")
+        email = r["fields"].get("Donor Email")
+        attachments = r["fields"].get("Attachments")
+        donations = r["fields"].get("Donations")
+        if name is not None:
+            m = Donor(name=name, email=email, notes=notes, attachments=attachments, donations=donations)
+            return jsonify((m.serialize()))
+    else:
+        return "This donor does not exist in the database."     
