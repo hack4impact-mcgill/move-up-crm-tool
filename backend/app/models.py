@@ -38,4 +38,14 @@ class Volunteer:
 
 
 class Donor(User):
-    pass
+    def __init__(self, name, email, notes, total_donated):
+        super().__init__(name, email)
+        self.notes = notes
+        self.total_donated = total_donated
+    def serialize(self):
+        return {
+            "name": self.name,
+            "email": self.email,
+            "notes": self.notes,
+            "total_donated": self.total_donated,
+        }

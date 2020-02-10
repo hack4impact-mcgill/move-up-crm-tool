@@ -212,10 +212,9 @@ def get_all_donors():
         name = r["fields"].get("Name")
         notes = r["fields"].get("Notes")
         email = r["fields"].get("Donor Email")
-        attachments = r["fields"].get("Attachments")
-        donations = r["fields"].get("Donations")
+        donations = r["fields"].get("Total Donated")
         if name is not None:
-            m = Donor(name=name, email=email, notes=notes, attachments=attachments, donations=donations)
+            m = Donor(name=name, email=email, notes=notes, total_donated=donations)
             list_of_donors.append(m.serialize())
     return jsonify(list_of_donors)
 
@@ -231,10 +230,9 @@ def get_a_donor(id):
         name = r["fields"].get("Name")
         notes = r["fields"].get("Notes")
         email = r["fields"].get("Donor Email")
-        attachments = r["fields"].get("Attachments")
-        donations = r["fields"].get("Donations")
+        donations = r["fields"].get("Total Donated")
         if name is not None:
-            m = Donor(name=name, email=email, notes=notes, attachments=attachments, donations=donations)
+            m = Donor(name=name, email=email, notes=notes, total_donated=donations)
             return jsonify((m.serialize()))
     else:
         return "This donor does not exist in the database."
@@ -253,10 +251,9 @@ def get_a_donor_from_email(email):
         name = r["fields"].get("Name")
         notes = r["fields"].get("Notes")
         email = r["fields"].get("Donor Email")
-        attachments = r["fields"].get("Attachments")
-        donations = r["fields"].get("Donations")
+        donations = r["fields"].get("Total Donated")
         if name is not None:
-            m = Donor(name=name, email=email, notes=notes, attachments=attachments, donations=donations)
+            m = Donor(name=name, email=email, notes=notes, total_donated=donations)
             return jsonify((m.serialize()))
     else:
         return "This donor does not exist in the database."     
