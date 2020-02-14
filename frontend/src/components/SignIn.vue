@@ -1,7 +1,7 @@
 <template>
-  <div class="p-3 m-3">
-    <q-btn color="primary" id="signin-button"></q-btn>
-    <q-btn v-if="signedIn" color="primary" @click="onSignOut">Sign Out</q-btn>
+  <div>
+    <q-btn v-show="!signedIn" id="signin-button"></q-btn>
+    <q-btn v-show="signedIn" @click="onSignOut">Sign Out</q-btn>
   </div>
 </template>
 
@@ -16,15 +16,13 @@ export default {
     });
   },
   methods: {
-    onSignIn(googleUser) {
+    onSignIn() {
       this.signedIn = true;
-      // eslint-disable-next-line
-      console.log("Logged in as: " + googleUser.getBasicProfile().getName());
     },
     onSignOut() {
       let auth2 = window.gapi.auth2.getAuthInstance();
-      // eslint-disable-next-line
-      auth2.signOut().then(() => console.log("User logged out."));
+      auth2.signOut();
+      this.signedIn = false;
     }
   }
 };
