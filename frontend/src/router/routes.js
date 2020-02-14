@@ -2,10 +2,17 @@ const routes = [
   {
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
-    children: [
-      { path: "", component: () => import("pages/Index.vue") },
-      { path: "signin", component: () => import("components/SignIn.vue") }
-    ]
+    children: [{ path: "", component: () => import("pages/Index.vue") }]
+  },
+  { path: "/signin", component: () => import("components/SignIn.vue") },
+  {
+    path: "/protected",
+    component: () => import("components/EssentialLink.vue"),
+    props: { title: "Protected Page" },
+    beforeEnter: (to, from, next) => {
+      next("/signin");
+      next();
+    }
   }
 ];
 
