@@ -8,7 +8,7 @@
 <script>
 export default {
   data() {
-    return { signedIn: false };
+    return { signedIn: this.$store.state.userExists };
   },
   mounted() {
     window.gapi.signin2.render("signin-button", {
@@ -17,12 +17,16 @@ export default {
   },
   methods: {
     onSignIn() {
-      this.signedIn = true;
+      let auth2 = window.gapi.auth2.getAuthInstance();
+      let user = auth2.currentUser.get().getBasicProfile();
+      this.$store.dispatch("login", user);
+      this.signedIn = this.$store.state.userExists;
     },
     onSignOut() {
       let auth2 = window.gapi.auth2.getAuthInstance();
+      this.$store.dispatch("logout");
+      this.signedIn = this.$store.state.userExists;
       auth2.signOut();
-      this.signedIn = false;
     }
   }
 };
