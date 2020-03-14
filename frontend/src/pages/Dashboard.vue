@@ -44,5 +44,7 @@
 .dashboard-button {
   width: 180px;
   height: 120px;
+  margin: 15px;
+  font-size: 15px;
 }
 </style>

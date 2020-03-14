@@ -2,7 +2,9 @@
   <q-layout view="lHh Lpr lFf" id="container">
     <q-header>
       <q-toolbar class="bg-secondary">
-        <q-toolbar-title>Move Up</q-toolbar-title>
+        <q-toolbar-title>
+          <b>Move Up</b>
+        </q-toolbar-title>
         <div>
           <q-btn flat round color="background" label="LOG OUT" @click="logout" />
         </div>
