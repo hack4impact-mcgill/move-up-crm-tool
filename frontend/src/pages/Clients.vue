@@ -2,12 +2,12 @@
 <template>
   <div class="q-pa-md q-gutter-sm">
     <q-table
-        class="table-width"
-        title="Clients"
-        :data="clients"
-        :columns="columns"
-        row-key="email"
-        wrap-cells
+      class="table-width"
+      title="Clients"
+      :data="clients"
+      :columns="columns"
+      row-key="email"
+      wrap-cells
     >
       <!--Expand Button-->
       <q-td slot="body-cell-expand" slot-scope="props" :props="props">
@@ -64,14 +64,15 @@ export default {
   methods: {
     //Custom Dialog Box
     row_expand(row) {
-        this.$q.dialog({
-            component: ClientPopup,
-            name: row.name,
-            email: row.email,
-            notes: row.notes,
-            attachments: row.attachments,
-            parent: this,
-            app: this.app
+      this.$q
+        .dialog({
+          component: ClientPopup,
+          name: row.name,
+          email: row.email,
+          notes: row.notes,
+          attachments: row.attachments,
+          parent: this,
+          app: this.app
         })
         .onOk(() => {})
         .onCancel(() => {})
@@ -95,6 +96,6 @@ export default {
     margin-top: 100px-->
 
 <style lang="sass">
-.table-width  
-    margin: 25px
+.table-width
+  margin: 25px
 </style>
