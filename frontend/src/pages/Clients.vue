@@ -23,11 +23,12 @@ import ClientPopup from "../components/ClientPopup.vue";
 export default {
   data() {
     return {
+      showEmailPopUp: false,
       clients: [],
       //Columns of Table
       columns: [
         {
-          name: "desc",
+          name: "name",
           required: true,
           label: "Name",
           style: "width: 150px",
