@@ -4,15 +4,29 @@ const routes = [
     component: () => import("layouts/MainLayout.vue"),
     children: [{ path: "", component: () => import("pages/Index.vue") }]
   },
-  { path: "/signin", component: () => import("components/SignIn.vue") },
   {
-    path: "/protected",
-    component: () => import("components/EssentialLink.vue"),
-    props: { title: "Protected Page" },
-    beforeEnter: (to, from, next) => {
-      next("/signin");
-      next();
-    }
+    path: "/home",
+    component: () => import("layouts/MainLayout.vue"),
+    // meta: { requiresAuth: true },
+    children: [{ path: "", component: () => import("pages/Dashboard.vue") }]
+  },
+  {
+    path: "/clients",
+    component: () => import("layouts/MainLayout.vue"),
+    // meta: { requiresAuth: true },
+    children: [{ path: "", component: () => import("pages/Clients.vue") }]
+  },
+  {
+    path: "/donors",
+    component: () => import("layouts/MainLayout.vue"),
+    // meta: { requiresAuth: true },
+    children: [{ path: "", component: () => import("pages/Donors.vue") }]
+  },
+  {
+    path: "/volunteers",
+    component: () => import("layouts/MainLayout.vue"),
+    // meta: { requiresAuth: true },
+    children: [{ path: "", component: () => import("pages/Volunteers.vue") }]
   }
 ];
 
