@@ -44,28 +44,22 @@ const Store = new Vuex.Store({
     }
   },
   actions: {
-    login({ commit }, user) {
-      return new Promise((resolve, reject) => {
-        const token = user.getId();
-        const email = "jane@moveuptoday.org"; // user.getEmail();
-        localStorage.setItem("token", token);
-        commit("auth_request");
-        AXIOS.get("/mentors/email/" + email)
-          .then((resp, token) => {
-            if (resp.data.name) {
-              const user = resp.data.name;
-              axios.defaults.headers.common["Authorization"] = token;
-              commit("auth_success", { token, user });
-              resolve(resp);
-            } else {
-              localStorage.removeItem("token");
-            }
-          })
-          .catch(err => {
-            commit("auth_error");
-            localStorage.removeItem("token");
-            reject(err);
-          });
+    async login({ commit }, user) {
+      const token = user.getId();
+      const email = user.getEmail();
+      commit("auth_request");
+      await AXIOS.get("/mentors/email/" + email).then(resp => {
+        if (resp.data.name) {
+          user = resp.data.name;
+          localStorage.setItem("token", token);
+          axios.defaults.headers.common["Authorization"] = token;
+          commit("auth_success", { token, user });
+          return;
+        } else {
+          localStorage.removeItem("token");
+          commit("auth_error");
+          return;
+        }
       });
     },
     logout({ commit }) {

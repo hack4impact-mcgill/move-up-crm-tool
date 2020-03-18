@@ -1,7 +1,7 @@
 <template>
   <div>
-    <q-btn v-show="!signedIn" id="signin-button"></q-btn>
-    <q-btn v-show="signedIn" @click="onSignOut">Sign Out</q-btn>
+    <q-btn v-show="!signedIn" @click="onSignIn" no-caps flat id="signin-button" />
+    <q-btn v-show="signedIn" @click="onSignOut" no-caps flat label="Sign out" />
   </div>
 </template>
 
@@ -16,11 +16,12 @@ export default {
     });
   },
   methods: {
-    onSignIn() {
+    async onSignIn() {
       let auth2 = window.gapi.auth2.getAuthInstance();
       let user = auth2.currentUser.get().getBasicProfile();
-      this.$store.dispatch("login", user);
-      this.signedIn = this.$store.state.userExists;
+      await this.$store.dispatch("login", user).then(() => {
+        this.signedIn = this.$store.state.userExists;
+      });
     },
     onSignOut() {
       let auth2 = window.gapi.auth2.getAuthInstance();
