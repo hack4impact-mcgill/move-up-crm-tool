@@ -6,7 +6,14 @@
           <b>Move Up</b>
         </q-toolbar-title>
         <SignIn />
-        <q-btn flat round color="background" icon="home" to="/home" class="q-mx-md" />
+        <q-btn
+          flat
+          round
+          color="background"
+          icon="home"
+          to="/home"
+          class="q-mx-md"
+        />
       </q-toolbar>
     </q-header>
 

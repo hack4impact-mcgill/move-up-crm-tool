@@ -5,8 +5,10 @@ import axios from "axios";
 Vue.use(Vuex);
 
 // Axios config
-const frontendUrl = "http://127.0.0.1:8080/";
-const backendUrl = "http://127.0.0.1:5000";
+const frontendUrl =
+  process.env.NODE_ENV === "development" ? "http://127.0.0.1:8080/" : "";
+const backendUrl =
+  process.env.NODE_ENV === "development" ? "http://127.0.0.1:5000/" : "";
 
 var AXIOS = axios.create({
   baseURL: backendUrl,

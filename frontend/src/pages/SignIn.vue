@@ -1,6 +1,12 @@
 <template>
   <div>
-    <q-btn v-show="!signedIn" @click="onSignIn" no-caps flat id="signin-button" />
+    <q-btn
+      v-show="!signedIn"
+      @click="onSignIn"
+      no-caps
+      flat
+      id="signin-button"
+    />
     <q-btn v-show="signedIn" @click="onSignOut" no-caps flat label="Sign out" />
   </div>
 </template>
