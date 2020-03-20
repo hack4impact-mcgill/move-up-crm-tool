@@ -43,11 +43,17 @@ module.exports = function (ctx) {
       //            (not treeshaking Quasar; biggest bundle size; convenient)
       all: 'auto',
 
-      components: [],
-      directives: [],
+      components: [
+
+      ],
+      directives: [
+        
+      ],
 
       // Quasar plugins
-      plugins: []
+      plugins: [
+        'Dialog',
+      ]
     },
 
     // https://quasar.dev/quasar-cli/cli-documentation/supporting-ie
