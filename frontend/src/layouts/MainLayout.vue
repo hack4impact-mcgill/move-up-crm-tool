@@ -5,12 +5,15 @@
         <q-toolbar-title>
           <b>Move Up</b>
         </q-toolbar-title>
-        <div>
-          <q-btn flat round color="background" label="LOG OUT" @click="logout" />
-        </div>
-        <div>
-          <q-btn flat round color="background" icon="home" to="/home" />
-        </div>
+        <SignIn />
+        <q-btn
+          flat
+          round
+          color="background"
+          icon="home"
+          to="/home"
+          class="q-mx-md"
+        />
       </q-toolbar>
     </q-header>
 
@@ -21,7 +24,11 @@
 </template>
 
 <script>
+import SignIn from "../pages/SignIn.vue";
+
+export default {
+  components: { SignIn }
+};
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

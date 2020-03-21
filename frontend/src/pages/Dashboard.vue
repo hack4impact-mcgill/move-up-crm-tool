@@ -37,8 +37,7 @@
   </q-page>
 </template>
 
-<script>
-</script>
+<script></script>
 
 <style lang="scss" scoped>
 .dashboard-button {
