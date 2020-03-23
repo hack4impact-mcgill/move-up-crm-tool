@@ -3,7 +3,7 @@ import requests
 import os
 import re
 from flask import Flask, jsonify, request, abort, make_response
-from app.models import Mentor, Client, Donor
+from app.models import Mentor, Client, Donor, Volunteer
 from app.email import send_email
 from . import main
 
@@ -134,6 +134,46 @@ def get_a_client_from_email(email):
     else: 
         return "There is no client with that email, please try again."
 
+# get all Volunteers from Airtable
+@main.route("/volunteers", methods = ["GET"])
+def get_all_volunteers():
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers",
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    ) 
+    response_json = response.json()
+    list_of_volunteers = []
+    for r in response_json["records"]:
+        name = r["fields"].get("Name")
+        notes = r["fields"].get("Notes")
+        email = r["fields"].get("Volunteer Email")
+        attachments = r["fields"].get("Attachments")
+        if name is not None:
+            m = Volunteer(name=name, email=email, notes=notes, attachments=attachments)
+            list_of_volunteers.append(m.serialize())
+    return jsonify(list_of_volunteers)
+
+# get a volunteer from Airtable
+@main.route("/volunteers/<id>", methods = ["GET"])
+def get_a_volunteer(id):
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers/{}".format(id),
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    if response.status_code == 200:
+        response_json = response.json()
+        volunteer = []
+        name = response_json["fields"].get("Name")
+        notes = response_json["fields"].get("Notes")
+        email = response_json["fields"].get("Volunteer Email")
+        attachments = response_json["fields"].get("Attachments")
+        if name is not None:
+            m = Volunteer(name=name, email=email, notes=notes, attachments=attachments)
+            volunteer.append(m.serialize())
+            return jsonify(volunteer)
+    else:
+        return "This volunteer does not exist in the database"
+        
 
 
 
