@@ -131,10 +131,11 @@ def get_a_client_from_email(email):
         response_json = response.json()
         for r in response_json["records"]:
             name = r["fields"].get("Name")
+            email = r["fields"].get("Client Email")
             notes = r["fields"].get("Notes")
             attachments = r["fields"].get("Attachments")
             if name is not None and email is not None:
-                m = Client(name=name, notes=notes, attachments=attachments)
+                m = Client(name=name, email=email, notes=notes, attachments=attachments)
                 list_of_clients.append(m.serialize())
                 return jsonify(list_of_clients)
     else: 
