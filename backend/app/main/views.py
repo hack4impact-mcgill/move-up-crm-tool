@@ -31,7 +31,7 @@ def get_all_mentors():
                 list_of_mentors.append(m.serialize())
         return jsonify(list_of_mentors)
     else:
-        return "There are no mentors in the database.", 400
+        return "There are no mentors in the database.", response.status_code
 
 
 # get a mentor by id from Airtable
@@ -49,7 +49,7 @@ def get_mentor_by_id(id):
             mentor = Mentor(name=name, email=email)
             return jsonify(mentor.serialize())
     else:
-        return "This mentor does not exist in the database.", 400
+        return "This mentor does not exist in the database.", response.status_code
 
 
 # get a mentor by email from Airtable
@@ -71,7 +71,7 @@ def get_mentor_by_email(email):
                 m = Mentor(name=name, email=email)
                 return jsonify(m.serialize())
     else:
-        return "There is no mentor with that email, please try again.", 400
+        return "There is no mentor with that email, please try again.", response.status_code
 
 
 # get all clients from Airtable
@@ -94,7 +94,7 @@ def get_all_clients():
                 list_of_clients.append(m.serialize())
         return jsonify(list_of_clients)
     else:
-        return "There are no clients in the database.", 400
+        return "There are no clients in the database.", response.status_code
 
 
 # get a client from Airtable
@@ -116,7 +116,7 @@ def get_a_client(id):
             client.append(m.serialize())
             return jsonify(client)
     else:
-        return "This client does not exist in the database.", 400
+        return "This client does not exist in the database.", response.status_code
 
 
 # get a client from Airtable using client's email 
@@ -139,7 +139,7 @@ def get_a_client_from_email(email):
                 list_of_clients.append(m.serialize())
                 return jsonify(list_of_clients)
     else: 
-        return "There is no client with that email, please try again.", 400
+        return "There is no client with that email, please try again.", response.status_code
 
 # get all Volunteers from Airtable
 @main.route("/volunteers", methods = ["GET"])
@@ -161,7 +161,7 @@ def get_all_volunteers():
                 list_of_volunteers.append(m.serialize())
         return jsonify(list_of_volunteers)
     else:
-        return "There are no volunteers in the database.", 400
+        return "There are no volunteers in the database.", response.status_code
 
 # get a volunteer from Airtable
 @main.route("/volunteers/<id>", methods = ["GET"])
@@ -182,8 +182,31 @@ def get_a_volunteer(id):
             volunteer.append(m.serialize())
             return jsonify(volunteer)
     else:
-        return "This volunteer does not exist in the database", 400
-        
+        return "This volunteer does not exist in the database", response.status_code
+
+# get a volunteer from Airtable using volunteer's email 
+@main.route("/volunteers/email/<email>", methods = ["GET"])
+def get_volunteer_by_email(email): 
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers?filterByFormula=SEARCH('{}'".format(email) + ", {Volunteer Email})", 
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    print(response.json())
+    if response.status_code == 200:
+        list_of_volunteers = []
+        response_json = response.json()
+        for r in response_json["records"]:
+            name = r["fields"].get("Name")
+            email = r["fields"].get("Volunteer Email")
+            notes = r["fields"].get("Notes")
+            attachments = r["fields"].get("Attachments")
+            if name is not None and email is not None:
+                m = Client(name=name, email=email, notes=notes, attachments=attachments)
+                list_of_volunteers.append(m.serialize())
+                return jsonify(list_of_volunteers)
+    else: 
+        return "There is no volunteer with that email, please try again.", response.status_code
+
 
 
 
