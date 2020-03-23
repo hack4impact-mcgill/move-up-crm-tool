@@ -33,8 +33,21 @@ class Client(User):
         }
 
 
-class Volunteer:
-    pass
+class Volunteer(User):
+    
+    #constructor
+    def __init__(self, name, email, notes, attachments):
+        super().__init__(name, email)
+        self.notes = notes
+        self.attachments = attachments
+
+    def serialize(self):
+        return {
+            "name": self.name,
+            "email": self.email,
+            "notes": self.notes,
+            "attachments": self.attachments,
+        }
 
 
 class Donor(User):
