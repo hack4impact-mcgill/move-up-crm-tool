@@ -91,7 +91,7 @@ def get_all_clients():
     return jsonify(list_of_clients)
 
 
-# get a client from Airtable
+# get a client from Airtable
 @main.route("/clients/<id>", methods=["GET"])
 def get_a_client(id):
     response = requests.get(
@@ -206,19 +206,22 @@ def get_all_donors():
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
-    response_json = response.json()
     list_of_donors = []
-    for r in response_json["records"]:
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        email = r["fields"].get("Donor Email")
-        donations = r["fields"].get("Total Donated")
-        if name is not None:
-            m = Donor(name=name, email=email, notes=notes, total_donated=donations)
-            list_of_donors.append(m.serialize())
-    return jsonify(list_of_donors)
+    if response.status_code == 200:
+        response_json = response.json()
+        for r in response_json["records"]:
+            name = r["fields"].get("Name")
+            notes = r["fields"].get("Notes")
+            email = r["fields"].get("Donor Email")
+            donations = r["fields"].get("Total Donated")
+            if name is not None and email is not None:
+                m = Donor(name=name, email=email, notes=notes, total_donated=donations)
+                list_of_donors.append(m.serialize())
+        return jsonify(list_of_donors)
+    else:
+        return "There are no donors in this database.", 400
 
-# get a donor from Airtable
+# get a donor from Airtable
 @main.route("/donors/<id>", methods=["GET"])
 def get_a_donor(id):
     response = requests.get(
@@ -231,11 +234,11 @@ def get_a_donor(id):
         notes = r["fields"].get("Notes")
         email = r["fields"].get("Donor Email")
         donations = r["fields"].get("Total Donated")
-        if name is not None:
+        if name is not None and email is not None:
             m = Donor(name=name, email=email, notes=notes, total_donated=donations)
             return jsonify((m.serialize()))
     else:
-        return "This donor does not exist in the database."
+        return "This donor does not exist in the database.", 400
 
 
 # get a donor from Airtable using donor's email 
@@ -247,13 +250,13 @@ def get_a_donor_from_email(email):
     )
     if response.status_code == 200:
         response_json = response.json()
-    for r in response_json["records"]:
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        email = r["fields"].get("Donor Email")
-        donations = r["fields"].get("Total Donated")
-        if name is not None:
-            m = Donor(name=name, email=email, notes=notes, total_donated=donations)
-            return jsonify((m.serialize()))
+        for r in response_json["records"]:
+            name = r["fields"].get("Name")
+            notes = r["fields"].get("Notes")
+            email = r["fields"].get("Donor Email")
+            donations = r["fields"].get("Total Donated")
+            if name is not None and email is not None:
+                m = Donor(name=name, email=email, notes=notes, total_donated=donations)
+                return jsonify((m.serialize()))
     else:
-        return "This donor does not exist in the database."     
+        return "This donor does not exist in the database.", 400     

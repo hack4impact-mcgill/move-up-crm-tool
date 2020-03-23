@@ -42,6 +42,7 @@ class Donor(User):
         super().__init__(name, email)
         self.notes = notes
         self.total_donated = total_donated
+    
     def serialize(self):
         return {
             "name": self.name,
