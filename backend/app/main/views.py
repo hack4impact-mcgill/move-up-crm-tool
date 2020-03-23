@@ -20,15 +20,18 @@ def get_all_mentors():
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
-    response_json = response.json()
-    list_of_mentors = []
-    for r in response_json["records"]:
-        name = r["fields"].get("Name")
-        email = r["fields"].get("Move Up Email")
-        if name is not None and email is not None:
-            m = Mentor(name=name, email=email)
-            list_of_mentors.append(m.serialize())
-    return jsonify(list_of_mentors)
+    if response.status_code == 200:
+        list_of_mentors = []
+        response_json = response.json()
+        for r in response_json["records"]:
+            name = r["fields"].get("Name")
+            email = r["fields"].get("Move Up Email")
+            if name is not None and email is not None:
+                m = Mentor(name=name, email=email)
+                list_of_mentors.append(m.serialize())
+        return jsonify(list_of_mentors)
+    else:
+        return "There are no mentors in the database.", 400
 
 
 # get a mentor by id from Airtable
@@ -42,11 +45,11 @@ def get_mentor_by_id(id):
         response_json = response.json()
         name = response_json["fields"].get("Name")
         email = response_json["fields"].get("Move Up Email")
-        if name is not None:
+        if name is not None and email is not None:
             mentor = Mentor(name=name, email=email)
             return jsonify(mentor.serialize())
     else:
-        return "This mentor does not exist in the database."
+        return "This mentor does not exist in the database.", 400
 
 
 # get a mentor by email from Airtable
@@ -61,14 +64,14 @@ def get_mentor_by_email(email):
     )
     if response.status_code == 200:
         response_json = response.json()
-    for r in response_json["records"]:
-        name = r["fields"].get("Name")
-        email = r["fields"].get("Move Up Email")
-        if name is not None:
-            m = Mentor(name=name, email=email)
-            return jsonify(m.serialize())
+        for r in response_json["records"]:
+            name = r["fields"].get("Name")
+            email = r["fields"].get("Move Up Email")
+            if name is not None and email is not None:
+                m = Mentor(name=name, email=email)
+                return jsonify(m.serialize())
     else:
-        return "There is no mentor with that email, please try again."
+        return "There is no mentor with that email, please try again.", 400
 
 
 # get all clients from Airtable
@@ -78,17 +81,20 @@ def get_all_clients():
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
-    response_json = response.json()
-    list_of_clients = []
-    for r in response_json["records"]:
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        email = r["fields"].get("Client Email")
-        attachments = r["fields"].get("Attachments")
-        if name is not None:
-            m = Client(name=name, email=email, notes=notes, attachments=attachments)
-            list_of_clients.append(m.serialize())
-    return jsonify(list_of_clients)
+    if response.status_code == 200:
+        list_of_clients = []
+        response_json = response.json()
+        for r in response_json["records"]:
+            name = r["fields"].get("Name")
+            notes = r["fields"].get("Notes")
+            email = r["fields"].get("Client Email")
+            attachments = r["fields"].get("Attachments")
+            if name is not None and email is not None:
+                m = Client(name=name, email=email, notes=notes, attachments=attachments)
+                list_of_clients.append(m.serialize())
+        return jsonify(list_of_clients)
+    else:
+        return "There are no clients in the database.", 400
 
 
 # get a client from Airtable
@@ -105,12 +111,12 @@ def get_a_client(id):
         notes = response_json["fields"].get("Notes")
         email = response_json["fields"].get("Client Email")
         attachments = response_json["fields"].get("Attachments")
-        if name is not None:
+        if name is not None and email is not None:
             m = Client(name=name, email=email, notes=notes, attachments=attachments)
             client.append(m.serialize())
             return jsonify(client)
     else:
-        return "This client does not exist in the database."
+        return "This client does not exist in the database.", 400
 
 
 # get a client from Airtable using client's email 
@@ -120,19 +126,19 @@ def get_a_client_from_email(email):
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(email) + ", {Client Email})", 
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
-    response_json = response.json()
-
-    list_of_clients = []
-    for r in response_json["records"]:
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        attachments = r["fields"].get("Attachments")
-        if name is not None:
-            m = Client(name=name, notes=notes, attachments=attachments)
-            list_of_clients.append(m.serialize())
-            return jsonify(list_of_clients)
+    if response.status_code == 200:
+        list_of_clients = []
+        response_json = response.json()
+        for r in response_json["records"]:
+            name = r["fields"].get("Name")
+            notes = r["fields"].get("Notes")
+            attachments = r["fields"].get("Attachments")
+            if name is not None and email is not None:
+                m = Client(name=name, notes=notes, attachments=attachments)
+                list_of_clients.append(m.serialize())
+                return jsonify(list_of_clients)
     else: 
-        return "There is no client with that email, please try again."
+        return "There is no client with that email, please try again.", 400
 
 # get all Volunteers from Airtable
 @main.route("/volunteers", methods = ["GET"])
@@ -140,18 +146,21 @@ def get_all_volunteers():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
-    ) 
-    response_json = response.json()
-    list_of_volunteers = []
-    for r in response_json["records"]:
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        email = r["fields"].get("Volunteer Email")
-        attachments = r["fields"].get("Attachments")
-        if name is not None:
-            m = Volunteer(name=name, email=email, notes=notes, attachments=attachments)
-            list_of_volunteers.append(m.serialize())
-    return jsonify(list_of_volunteers)
+    )
+    if response.status_code == 200: 
+        list_of_volunteers = []   
+        response_json = response.json()
+        for r in response_json["records"]:
+            name = r["fields"].get("Name")
+            notes = r["fields"].get("Notes")
+            email = r["fields"].get("Volunteer Email")
+            attachments = r["fields"].get("Attachments")
+            if name is not None and email is not None:
+                m = Volunteer(name=name, email=email, notes=notes, attachments=attachments)
+                list_of_volunteers.append(m.serialize())
+        return jsonify(list_of_volunteers)
+    else:
+        return "There are no volunteers in the database.", 400
 
 # get a volunteer from Airtable
 @main.route("/volunteers/<id>", methods = ["GET"])
@@ -167,12 +176,12 @@ def get_a_volunteer(id):
         notes = response_json["fields"].get("Notes")
         email = response_json["fields"].get("Volunteer Email")
         attachments = response_json["fields"].get("Attachments")
-        if name is not None:
+        if name is not None and email is not None:
             m = Volunteer(name=name, email=email, notes=notes, attachments=attachments)
             volunteer.append(m.serialize())
             return jsonify(volunteer)
     else:
-        return "This volunteer does not exist in the database"
+        return "This volunteer does not exist in the database", 400
         
 
 
