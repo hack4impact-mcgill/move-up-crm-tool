@@ -278,9 +278,23 @@ def get_volunteer_by_email(email):
     v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
     return jsonify(v.serialize())
 
-# Get all donors from Airtable
+# DONOR ROUTE
 @main.route("/donors", methods=["GET"])
 @main.route("/donors/", methods=["GET"])
+def donor_route_controller():
+    id_number = request.form.get('id')
+    email = request.args.get('email')
+    if(id_number is not None and email is not None):
+        return "Bad request. ID body requets or email query parameter need to be removed.", 400
+    elif(id_number is not None):
+        return get_a_donor(id_number)
+    elif(email is not None):
+        return get_a_donor_from_email(email)
+    else:
+        return get_all_donors()
+    
+    
+# Get all donors from Airtable
 def get_all_donors():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors",
@@ -304,11 +318,9 @@ def get_all_donors():
         if name is not None and email is not None:
             d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
             list_of_donors.append(d.serialize())
-    return jsonify(list_of_donors)
+    return jsonify(list_of_donors), 200
 
 # Get a donor from Airtable
-@main.route("/donors/<id>", methods=["GET"])
-@main.route("/donors/<id>/", methods=["GET"])
 def get_a_donor(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors/{}".format(id),
@@ -328,18 +340,15 @@ def get_a_donor(id):
     email = response_json["fields"].get("Donor Email")
     donations = response_json["fields"].get("Total Donated")
     if name is None or email is None:
-        return "There is no donor with this id. Please try again."
+        return "There is no donor with this id. Please try again.", 422
 
     #Create and return object    
     d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
-    return jsonify((d.serialize()))
+    return jsonify((d.serialize())), 200
 
 
 # Get a donor from Airtable using donor's email 
-@main.route("/donors", methods = ["GET"])
-@main.route("/donors/", methods = ["GET"])
-def get_a_donor_from_email(): 
-    email = request.args.get('email')
+def get_a_donor_from_email(email): 
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors?filterByFormula=SEARCH('{}'".format(email) + ", {Donor Email})", 
         headers={"Authorization": str(os.environ.get("API_KEY"))},
@@ -352,7 +361,7 @@ def get_a_donor_from_email():
         
     error = handleEmailResponse(response_json["records"])
     if(error is not None):
-        return error
+        return error, 422
 
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
@@ -361,11 +370,11 @@ def get_a_donor_from_email():
     email = response_json["records"][0]["fields"].get("Donor Email")
     donations = response_json["records"][0]["fields"].get("Total Donated")
     if name is None or email is None:
-        return "There is no donor with this email. Please try again." 
+        return "There is no donor with this email. Please try again.", 422 
 
     #Create and return object    
     d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
-    return jsonify((d.serialize()))
+    return jsonify((d.serialize())), 200
 
 
 def handleEmailResponse(res):
