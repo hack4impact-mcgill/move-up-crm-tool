@@ -13,8 +13,20 @@ def index():
     return "Hello World!"
 
 # Get all mentors from Airtable
-@main.route("/mentors", methods=["GET"])
 @main.route("/mentors/", methods=["GET"])
+@main.route("/mentors", methods=["GET"])
+def mentors_route_controller():
+    id_number = request.form.get('id')
+    email = request.args.get('email')
+    if(id_number is not None and email is not None):
+        return "Bad request. ID body requets or email query parameter need to be removed.", 400
+    elif(id_number is not None):
+        return get_mentor_by_id(id_number)
+    elif(email is not None):
+        return get_mentor_by_email(email)
+    else:
+        return get_all_mentors()
+
 def get_all_mentors():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors",
@@ -36,12 +48,10 @@ def get_all_mentors():
         if name is not None and email is not None:
             m = Mentor(name=name, email=email, id_number=id_number)
             list_of_mentors.append(m.serialize())
-    return jsonify(list_of_mentors)
+    return jsonify(list_of_mentors), 200
 
 
 # Get a mentor by id from Airtable
-@main.route("/mentors/<id>", methods=["GET"])
-@main.route("/mentors/<id>/", methods=["GET"])
 def get_mentor_by_id(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors/{}".format(id),
@@ -59,17 +69,14 @@ def get_mentor_by_id(id):
     name = response_json["fields"].get("Name")
     email = response_json["fields"].get("Move Up Email")
     if name is None or email is None:
-        return "There is no mentor with this id. Please try again."
+        return "There is no mentor with this id. Please try again.", 422
     
     # Create and return object
     mentor = Mentor(name=name, email=email, id_number=id_number)
-    return jsonify(mentor.serialize())
+    return jsonify(mentor.serialize()), 200
         
 
-
 # Get a mentor by email from Airtable
-@main.route("/mentors/email/<email>", methods=["GET"])
-@main.route("/mentors/email/<email>/", methods=["GET"])
 def get_mentor_by_email(email):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors?filterByFormula=SEARCH('{}'".format(
@@ -87,23 +94,35 @@ def get_mentor_by_email(email):
     
     error = handleEmailResponse(response_json["records"])
     if(error is not None):
-        return error
+        return error, 422
 
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
     name = response_json["records"][0]["fields"].get("Name")
     email = response_json["records"][0]["fields"].get("Move Up Email")
     if name is None or email is None:
-        return "There is no mentor with that email. Please try again."
+        return "There is no mentor with that email. Please try again.", 422
    
     # Create and return object
     m = Mentor(name=name, email=email, id_number=id_number)
-    return jsonify(m.serialize())
+    return jsonify(m.serialize()), 200
 
 
 # Get all clients from Airtable
-@main.route("/clients", methods=["GET"])
 @main.route("/clients/", methods=["GET"])
+@main.route("/clients", methods=["GET"])
+def clients_route_controller():
+    id_number = request.form.get('id')
+    email = request.args.get('email')
+    if(id_number is not None and email is not None):
+        return "Bad request. ID body requets or email query parameter need to be removed.", 400
+    elif(id_number is not None):
+        return get_a_client(id_number)
+    elif(email is not None):
+        return get_a_client_from_email(email)
+    else:
+        return get_all_clients()
+
 def get_all_clients():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients",
@@ -127,11 +146,9 @@ def get_all_clients():
         if name is not None and email is not None:
             m = Client(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
             list_of_clients.append(m.serialize())
-    return jsonify(list_of_clients)
+    return jsonify(list_of_clients), 200
 
 # Get a client from Airtable
-@main.route("/clients/<id>", methods=["GET"])
-@main.route("/clients/<id>/", methods=["GET"])
 def get_a_client(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
@@ -151,16 +168,14 @@ def get_a_client(id):
     email = response_json["fields"].get("Client Email")
     attachments = response_json["fields"].get("Attachments")
     if name is None or email is None:
-        return "There is no client with this id. Please try again."
+        return "There is no client with this id. Please try again.", 422
 
     # Create and return object
     c = Client(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-    return jsonify(c.serialize())
+    return jsonify(c.serialize()), 200
 
 
-# get a client from Airtable using client's email 
-@main.route("/clients/email/<email>", methods = ["GET"])
-@main.route("/clients/email/<email>/", methods = ["GET"])
+# Get a client from Airtable using client's email 
 def get_a_client_from_email(email): 
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(email) + ", {Client Email})", 
@@ -175,7 +190,7 @@ def get_a_client_from_email(email):
     
     error = handleEmailResponse(response_json["records"])
     if(error is not None):
-        return error
+        return error, 422
     
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
@@ -184,15 +199,28 @@ def get_a_client_from_email(email):
     notes = response_json["records"][0]["fields"].get("Notes")
     attachments = response_json["records"][0]["fields"].get("Attachments")
     if name is None or email is None:
-        return "There is no client with that email. Please try again."
+        return "There is no client with that email. Please try again.", 422
     
     # Create and return object
     c = Client(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-    return jsonify(c.serialize())
+    return jsonify(c.serialize()), 200
+
+# VOLUNTEER ROUTE
+@main.route("/volunteers/", methods=["GET"])
+@main.route("/volunteers", methods=["GET"])
+def volunteer_route_controller():
+    id_number = request.form.get('id')
+    email = request.args.get('email')
+    if(id_number is not None and email is not None):
+        return "Bad request. ID body requets or email query parameter need to be removed.", 400
+    elif(id_number is not None):
+        return get_a_volunteer(id_number)
+    elif(email is not None):
+        return get_volunteer_by_email(email)
+    else:
+        return get_all_volunteers()
 
 # Get all Volunteers from Airtable
-@main.route("/volunteers", methods = ["GET"])
-@main.route("/volunteers/", methods = ["GET"])
 def get_all_volunteers():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers",
@@ -216,11 +244,9 @@ def get_all_volunteers():
         if name is not None and email is not None:
             v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
             list_of_volunteers.append(v.serialize())
-    return jsonify(list_of_volunteers)
+    return jsonify(list_of_volunteers), 200
 
 # Get a volunteer from Airtable
-@main.route("/volunteers/<id>", methods = ["GET"])
-@main.route("/volunteers/<id>/", methods = ["GET"])
 def get_a_volunteer(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers/{}".format(id),
@@ -240,15 +266,13 @@ def get_a_volunteer(id):
     email = response_json["fields"].get("Volunteer Email")
     attachments = response_json["fields"].get("Attachments")
     if name is None or email is None:
-        return "There is no volunteer with this id. Please try again."
+        return "There is no volunteer with this id. Please try again.", 422
 
     #Create and return object
     v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-    return jsonify(v.serialize())
+    return jsonify(v.serialize()), 200
 
 # Get a volunteer from Airtable using volunteer's email 
-@main.route("/volunteers/email/<email>", methods = ["GET"])
-@main.route("/volunteers/email/<email>/", methods = ["GET"])
 def get_volunteer_by_email(email): 
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers?filterByFormula=SEARCH('{}'".format(email) + ", {Volunteer Email})", 
@@ -263,7 +287,7 @@ def get_volunteer_by_email(email):
     
     error = handleEmailResponse(response_json["records"])
     if(error is not None):
-        return error
+        return error, 422
 
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
@@ -272,15 +296,15 @@ def get_volunteer_by_email(email):
     notes = response_json["records"][0]["fields"].get("Notes")
     attachments = response_json["records"][0]["fields"].get("Attachments")
     if name is None or email is None:
-        return "There is no volunteer with that email. Please try again."
+        return "There is no volunteer with that email. Please try again.", 422
 
     # Create and return object
     v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-    return jsonify(v.serialize())
+    return jsonify(v.serialize()), 200
 
 # DONOR ROUTE
-@main.route("/donors", methods=["GET"])
 @main.route("/donors/", methods=["GET"])
+@main.route("/donors", methods=["GET"])
 def donor_route_controller():
     id_number = request.form.get('id')
     email = request.args.get('email')
