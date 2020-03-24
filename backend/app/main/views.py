@@ -182,8 +182,9 @@ def get_a_client_from_email(email):
     c = Client(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
     return jsonify(c.serialize())
 
-# get all Volunteers from Airtable
+# Get all Volunteers from Airtable
 @main.route("/volunteers", methods = ["GET"])
+@main.route("/volunteers/", methods = ["GET"])
 def get_all_volunteers():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers",
@@ -196,23 +197,22 @@ def get_all_volunteers():
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
     
-    if response.status_code == 200: 
-        list_of_volunteers = []   
-        response_json = response.json()
-        for r in response_json["records"]:
-            name = r["fields"].get("Name")
-            notes = r["fields"].get("Notes")
-            email = r["fields"].get("Volunteer Email")
-            attachments = r["fields"].get("Attachments")
-            if name is not None and email is not None:
-                m = Volunteer(name=name, email=email, notes=notes, attachments=attachments)
-                list_of_volunteers.append(m.serialize())
-        return jsonify(list_of_volunteers)
-    else:
-        return "There are no volunteers in the database.", response.status_code
+    # Create and return object
+    list_of_volunteers = []   
+    for r in response_json["records"]:
+        id_number = r["id"]
+        name = r["fields"].get("Name")
+        notes = r["fields"].get("Notes")
+        email = r["fields"].get("Volunteer Email")
+        attachments = r["fields"].get("Attachments")
+        if name is not None and email is not None:
+            v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
+            list_of_volunteers.append(v.serialize())
+    return jsonify(list_of_volunteers)
 
-# get a volunteer from Airtable
+# Get a volunteer from Airtable
 @main.route("/volunteers/<id>", methods = ["GET"])
+@main.route("/volunteers/<id>/", methods = ["GET"])
 def get_a_volunteer(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers/{}".format(id),
@@ -224,23 +224,23 @@ def get_a_volunteer(id):
     # Validation check
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
-    
-    if response.status_code == 200:
-        response_json = response.json()
-        volunteer = []
-        name = response_json["fields"].get("Name")
-        notes = response_json["fields"].get("Notes")
-        email = response_json["fields"].get("Volunteer Email")
-        attachments = response_json["fields"].get("Attachments")
-        if name is not None and email is not None:
-            m = Volunteer(name=name, email=email, notes=notes, attachments=attachments)
-            volunteer.append(m.serialize())
-            return jsonify(volunteer)
-    else:
-        return "This volunteer does not exist in the database", response.status_code
 
-# get a volunteer from Airtable using volunteer's email 
+    # Get object's parameters
+    id_number = response_json["id"]
+    name = response_json["fields"].get("Name")
+    notes = response_json["fields"].get("Notes")
+    email = response_json["fields"].get("Volunteer Email")
+    attachments = response_json["fields"].get("Attachments")
+    if name is None or email is None:
+        return "There is no volunteer with this id. Please try again."
+
+    #Create and return object
+    v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
+    return jsonify(v.serialize())
+
+# Get a volunteer from Airtable using volunteer's email 
 @main.route("/volunteers/email/<email>", methods = ["GET"])
+@main.route("/volunteers/email/<email>/", methods = ["GET"])
 def get_volunteer_by_email(email): 
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers?filterByFormula=SEARCH('{}'".format(email) + ", {Volunteer Email})", 
@@ -253,20 +253,18 @@ def get_volunteer_by_email(email):
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
     
-    if response.status_code == 200:
-        list_of_volunteers = []
-        response_json = response.json()
-        for r in response_json["records"]:
-            name = r["fields"].get("Name")
-            email = r["fields"].get("Volunteer Email")
-            notes = r["fields"].get("Notes")
-            attachments = r["fields"].get("Attachments")
-            if name is not None and email is not None:
-                m = Client(name=name, email=email, notes=notes, attachments=attachments)
-                list_of_volunteers.append(m.serialize())
-                return jsonify(list_of_volunteers)
-    else: 
-        return "There is no volunteer with that email, please try again.", response.status_code
+    # Get object's parameters
+    id_number = response_json["id"]
+    name = response_json["fields"].get("Name")
+    email = response_json["fields"].get("Volunteer Email")
+    notes = response_json["fields"].get("Notes")
+    attachments = response_json["fields"].get("Attachments")
+    if name is None or email is None:
+        return "There is no volunteer with that email. Please try again."
+        
+    # Create and return object
+    v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
+    return jsonify(v.serialize())
 
 
 
