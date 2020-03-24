@@ -85,6 +85,10 @@ def get_mentor_by_email(email):
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
     
+    error = handleEmailResponse(response_json["records"])
+    if(error is not None):
+        return error
+
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
     name = response_json["records"][0]["fields"].get("Name")
@@ -168,6 +172,10 @@ def get_a_client_from_email(email):
     # Validation check
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
+    
+    error = handleEmailResponse(response_json["records"])
+    if(error is not None):
+        return error
     
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
@@ -253,6 +261,10 @@ def get_volunteer_by_email(email):
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
     
+    error = handleEmailResponse(response_json["records"])
+    if(error is not None):
+        return error
+
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
     name = response_json["records"][0]["fields"].get("Name")
@@ -324,9 +336,10 @@ def get_a_donor(id):
 
 
 # Get a donor from Airtable using donor's email 
-@main.route("/donors/email/<email>", methods = ["GET"])
-@main.route("/donors/email/<email>/", methods = ["GET"])
-def get_a_donor_from_email(email): 
+@main.route("/donors", methods = ["GET"])
+@main.route("/donors/", methods = ["GET"])
+def get_a_donor_from_email(): 
+    email = request.args.get('email')
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors?filterByFormula=SEARCH('{}'".format(email) + ", {Donor Email})", 
         headers={"Authorization": str(os.environ.get("API_KEY"))},
@@ -336,6 +349,10 @@ def get_a_donor_from_email(email):
     # Validation check
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
+        
+    error = handleEmailResponse(response_json["records"])
+    if(error is not None):
+        return error
 
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
@@ -351,7 +368,17 @@ def get_a_donor_from_email(email):
     return jsonify((d.serialize()))
 
 
-
+def handleEmailResponse(res):
+    if (len(res)) == 0:
+        return "No records in this database."
+    elif (len(res)) > 1:
+        errorMsg = "The email address is associated to " + str(len(res)) + " names. It appears for"
+        for i in range(len(res)):
+            if(i == len(res) - 1):
+                errorMsg += " and " + res[i]["fields"].get("Name") + "."
+            else:
+                errorMsg += " " + res[i]["fields"].get("Name") + ","
+        return errorMsg
 
 
 # Gets list of client notes based on clientid or email
