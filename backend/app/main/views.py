@@ -3,7 +3,7 @@ import requests
 import os
 import re
 from flask import Flask, jsonify, request, abort, make_response
-from app.models import Mentor, Client, Volunteer
+from app.models import Mentor, Client, Volunteer, Donor
 from app.email import send_email
 from . import main
 
@@ -86,9 +86,9 @@ def get_mentor_by_email(email):
         return response_json["error"], response.status_code
     
     # Get object's parameters
-    id_number = response_json["id"]
-    name = response_json["fields"].get("Name")
-    email = response_json["fields"].get("Move Up Email")
+    id_number = response_json["records"][0]["id"]
+    name = response_json["records"][0]["fields"].get("Name")
+    email = response_json["records"][0]["fields"].get("Move Up Email")
     if name is None or email is None:
         return "There is no mentor with that email. Please try again."
    
@@ -170,11 +170,11 @@ def get_a_client_from_email(email):
         return response_json["error"], response.status_code
     
     # Get object's parameters
-    id_number = response_json["id"]
-    name = response_json["fields"].get("Name")
-    email = response_json["fields"].get("Client Email")
-    notes = response_json["fields"].get("Notes")
-    attachments = response_json["fields"].get("Attachments")
+    id_number = response_json["records"][0]["id"]
+    name = response_json["records"][0]["fields"].get("Name")
+    email = response_json["records"][0]["fields"].get("Client Email")
+    notes = response_json["records"][0]["fields"].get("Notes")
+    attachments = response_json["records"][0]["fields"].get("Attachments")
     if name is None or email is None:
         return "There is no client with that email. Please try again."
     
@@ -254,19 +254,101 @@ def get_volunteer_by_email(email):
         return response_json["error"], response.status_code
     
     # Get object's parameters
-    id_number = response_json["id"]
-    name = response_json["fields"].get("Name")
-    email = response_json["fields"].get("Volunteer Email")
-    notes = response_json["fields"].get("Notes")
-    attachments = response_json["fields"].get("Attachments")
+    id_number = response_json["records"][0]["id"]
+    name = response_json["records"][0]["fields"].get("Name")
+    email = response_json["records"][0]["fields"].get("Volunteer Email")
+    notes = response_json["records"][0]["fields"].get("Notes")
+    attachments = response_json["records"][0]["fields"].get("Attachments")
     if name is None or email is None:
         return "There is no volunteer with that email. Please try again."
-        
+
     # Create and return object
     v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
     return jsonify(v.serialize())
 
+# Get all donors from Airtable
+@main.route("/donors", methods=["GET"])
+@main.route("/donors/", methods=["GET"])
+def get_all_donors():
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors",
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    # Convert to JSON
+    response_json = response.json()
 
+    # Validation check
+    if (response.status_code // 100) != 2:
+        return response_json["error"], response.status_code
+
+    #Create and return object
+    list_of_donors = []
+    for r in response_json["records"]:
+        id_number = r["id"]
+        name = r["fields"].get("Name")
+        notes = r["fields"].get("Notes")
+        email = r["fields"].get("Donor Email")
+        donations = r["fields"].get("Total Donated")
+        if name is not None and email is not None:
+            d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
+            list_of_donors.append(d.serialize())
+    return jsonify(list_of_donors)
+
+# Get a donor from Airtable
+@main.route("/donors/<id>", methods=["GET"])
+@main.route("/donors/<id>/", methods=["GET"])
+def get_a_donor(id):
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors/{}".format(id),
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    # Convert to JSON
+    response_json = response.json()
+
+    # Validation check
+    if (response.status_code // 100) != 2:
+        return response_json["error"], response.status_code
+
+    # Get object's parameters
+    id_number = response_json["id"]
+    name = response_json["fields"].get("Name")
+    notes = response_json["fields"].get("Notes")
+    email = response_json["fields"].get("Donor Email")
+    donations = response_json["fields"].get("Total Donated")
+    if name is None or email is None:
+        return "There is no donor with this id. Please try again."
+
+    #Create and return object    
+    d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
+    return jsonify((d.serialize()))
+
+
+# Get a donor from Airtable using donor's email 
+@main.route("/donors/email/<email>", methods = ["GET"])
+@main.route("/donors/email/<email>/", methods = ["GET"])
+def get_a_donor_from_email(email): 
+    response = requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors?filterByFormula=SEARCH('{}'".format(email) + ", {Donor Email})", 
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+    # Convert to JSON
+    response_json = response.json()
+    # Validation check
+    if (response.status_code // 100) != 2:
+        return response_json["error"], response.status_code
+
+    # Get object's parameters
+    id_number = response_json["records"][0]["id"]
+    name = response_json["records"][0]["fields"].get("Name")
+    notes = response_json["records"][0]["fields"].get("Notes")
+    email = response_json["records"][0]["fields"].get("Donor Email")
+    donations = response_json["records"][0]["fields"].get("Total Donated")
+    if name is None or email is None:
+        return "There is no donor with this email. Please try again." 
+
+    #Create and return object    
+    d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
+    return jsonify((d.serialize()))
 
 
 
