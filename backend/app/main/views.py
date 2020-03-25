@@ -105,8 +105,6 @@ def get_all_clients():
             if name is not None:
                 m = Client(name=name, email=email, notes=notes, attachments=attachments)
                 list_of_clients.append(m.serialize())
-        if 'offset' in response_json:
-            offset = response_json["offset"]
     return jsonify(list_of_clients)
 
 
