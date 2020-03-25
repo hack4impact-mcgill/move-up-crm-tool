@@ -19,7 +19,7 @@ def mentors_route_controller():
     id_number = request.form.get('id')
     email = request.args.get('email')
     if(id_number is not None and email is not None):
-        return "Bad request. ID body requets or email query parameter need to be removed.", 400
+        return "Bad request. ID body requests or email query parameter need to be removed.", 400
     elif(id_number is not None):
         return get_mentor_by_id(id_number)
     elif(email is not None):
@@ -115,7 +115,7 @@ def clients_route_controller():
     id_number = request.form.get('id')
     email = request.args.get('email')
     if(id_number is not None and email is not None):
-        return "Bad request. ID body requets or email query parameter need to be removed.", 400
+        return "Bad request. ID body requests or email query parameter need to be removed.", 400
     elif(id_number is not None):
         return get_a_client(id_number)
     elif(email is not None):
@@ -212,7 +212,7 @@ def volunteer_route_controller():
     id_number = request.form.get('id')
     email = request.args.get('email')
     if(id_number is not None and email is not None):
-        return "Bad request. ID body requets or email query parameter need to be removed.", 400
+        return "Bad request. ID body requests or email query parameter need to be removed.", 400
     elif(id_number is not None):
         return get_a_volunteer(id_number)
     elif(email is not None):
@@ -309,7 +309,7 @@ def donor_route_controller():
     id_number = request.form.get('id')
     email = request.args.get('email')
     if(id_number is not None and email is not None):
-        return "Bad request. ID body requets or email query parameter need to be removed.", 400
+        return "Bad request. ID body requests or email query parameter need to be removed.", 400
     elif(id_number is not None):
         return get_a_donor(id_number)
     elif(email is not None):
