@@ -41,13 +41,16 @@ def get_all_mentors():
     
     # Create and return object
     list_of_mentors = []
-    for r in response_json["records"]:
-        id_number = r["id"]
-        name = r["fields"].get("Name")
-        email = r["fields"].get("Move Up Email")
-        if name is not None and email is not None:
-            m = Mentor(name=name, email=email, id_number=id_number)
-            list_of_mentors.append(m.serialize())
+    def getResponse():
+        for r in response_json["records"]:
+            id_number = r["id"]
+            name = r["fields"].get("Name")
+            email = r["fields"].get("Move Up Email")
+            if name is not None and email is not None:
+                m = Mentor(name=name, email=email, id_number=id_number)
+                list_of_mentors.append(m.serialize())
+    getResponse()
+    repeat_pagination(response_json, "Mentors", getResponse)
     return jsonify(list_of_mentors), 200
 
 
@@ -137,15 +140,19 @@ def get_all_clients():
     
     # Create and return object
     list_of_clients = []
-    for r in response_json["records"]:
-        id_number = r["id"]
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        email = r["fields"].get("Client Email")
-        attachments = r["fields"].get("Attachments")
-        if name is not None and email is not None:
-            m = Client(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-            list_of_clients.append(m.serialize())
+    def getResponse():
+        for r in response_json["records"]:
+            id_number = r["id"]
+            name = r["fields"].get("Name")
+            notes = r["fields"].get("Notes")
+            email = r["fields"].get("Client Email")
+            attachments = r["fields"].get("Attachments")
+            if name is not None and email is not None:
+                m = Client(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
+                list_of_clients.append(m.serialize())
+    getResponse()
+    # Pagination setting that will continue to send requests until all of the records have been retrieved	
+    repeat_pagination(response_json, "Clients", getResponse)
     return jsonify(list_of_clients), 200
 
 # Get a client from Airtable
@@ -234,16 +241,20 @@ def get_all_volunteers():
         return response_json["error"], response.status_code
     
     # Create and return object
-    list_of_volunteers = []   
-    for r in response_json["records"]:
-        id_number = r["id"]
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        email = r["fields"].get("Volunteer Email")
-        attachments = r["fields"].get("Attachments")
-        if name is not None and email is not None:
-            v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-            list_of_volunteers.append(v.serialize())
+    list_of_volunteers = [] 
+    def getResponse():  
+        for r in response_json["records"]:
+            id_number = r["id"]
+            name = r["fields"].get("Name")
+            notes = r["fields"].get("Notes")
+            email = r["fields"].get("Volunteer Email")
+            attachments = r["fields"].get("Attachments")
+            if name is not None and email is not None:
+                v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
+                list_of_volunteers.append(v.serialize())
+    getResponse()
+    # Pagination setting that will continue to send requests until all of the records have been retrieved	
+    repeat_pagination(response_json, "Volunteers", getResponse)
     return jsonify(list_of_volunteers), 200
 
 # Get a volunteer from Airtable
@@ -333,15 +344,18 @@ def get_all_donors():
 
     #Create and return object
     list_of_donors = []
-    for r in response_json["records"]:
-        id_number = r["id"]
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        email = r["fields"].get("Donor Email")
-        donations = r["fields"].get("Total Donated")
-        if name is not None and email is not None:
-            d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
-            list_of_donors.append(d.serialize())
+    def getResponse():
+        for r in response_json["records"]:
+            id_number = r["id"]
+            name = r["fields"].get("Name")
+            notes = r["fields"].get("Notes")
+            email = r["fields"].get("Donor Email")
+            donations = r["fields"].get("Total Donated")
+            if name is not None and email is not None:
+                d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
+                list_of_donors.append(d.serialize())
+    getResponse()
+    repeat_pagination(response_json, "Donors", getResponse)
     return jsonify(list_of_donors), 200
 
 # Get a donor from Airtable
@@ -413,6 +427,15 @@ def handleEmailResponse(res):
                 errorMsg += " " + res[i]["fields"].get("Name") + ","
         return errorMsg
 
+def repeat_pagination(response_json, userRole, getResponse):
+    while 'offset' in response_json:
+        offset = response_json["offset"]	
+        response = requests.get(	
+        ("https://api.airtable.com/v0/appw4RRMDig1g2PFI/"+userRole+"?offset={}").format(offset),	
+        headers={"Authorization": str(os.environ.get("API_KEY"))},	
+        )	
+        response_json = response.json()	
+        getResponse()
 
 # Gets list of client notes based on clientid or email
 @main.route("/notes/<id>", methods=["GET"])
