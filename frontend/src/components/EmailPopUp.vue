@@ -6,6 +6,7 @@
       <q-btn dense flat icon="close" v-close-popup></q-btn>
     </q-bar>
     <q-card-section>
+      <!-- Email form  -->
       <q-form @submit="sendEmail" class="q-gutter-md">
         <q-select
           v-model="selectedEmails"
@@ -32,7 +33,6 @@ export default {
   name: "EmailPopup",
   data() {
     return {
-      test: null,
       selectedEmails: [],
       allClientEmails: [],
       subject: null,
@@ -40,6 +40,7 @@ export default {
       filterOptions: this.allEmails
     };
   },
+  // Selected email and all clients' emails from Clients page
   props: {
     selected: Array,
     allEmails: Array
@@ -52,6 +53,7 @@ export default {
   },
 
   methods: {
+    // Allowing user to add new email recipients that is on the list 
     createEmail(newEmail, done) {
       if (newEmail.length > 0) {
         if (!this.allClientEmails.includes(newEmail)) {
@@ -61,6 +63,7 @@ export default {
         done(newEmail, "toggle");
       }
     },
+    // Allowing user to find an email quicker by filtering through the list of all emails
     filterEmails(val, update) {
       update(() => {
         if (val === "") {
@@ -73,6 +76,7 @@ export default {
         }
       });
     },
+    // calling flask-email API 
     sendEmail() {
       this.$axios
         .post("/send-email", {

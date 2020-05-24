@@ -17,7 +17,7 @@
       </q-td>
     </q-table>
 
-    <div class="q-mt-md">Selected: {{ JSON.stringify(selected) }}</div>
+    <!-- Email Client Button -->
     <div class="q-pa-md email-btn">
       <q-btn
         icon="email"
@@ -27,6 +27,7 @@
         style="padding: 7px;"
         @click="getSelectedEmail"
       />
+
       <q-dialog v-model="showEmailPopup">
         <EmailPopup
           :selected="selected"
@@ -103,6 +104,7 @@ export default {
         .get("/clients")
         .then(res => {
           this.clients = res.data;
+          // Add all of clients' emails into allEmails list
           this.clients.forEach(element => {
             this.allEmails.push(element.email);
           });
