@@ -16,11 +16,24 @@
           use-chips
           use-input
           input-debounce="0"
-          @new-value="createEmail"
+          @new-value="createRecipient"
           @filter="filterEmails"
           stack-label
+          lazy-rules
+          :rules="[
+            val =>
+              (val && val.length > 0) || 'Please enter at least one recipient'
+          ]"
         />
-        <q-input v-model="subject" label="Subject" />
+        <q-input
+          v-model="subject"
+          label="Subject"
+          lazy-rules
+          :rules="[
+            val =>
+              (val && val.length > 0) || 'Please enter a subject'
+          ]"
+        />
         <q-input v-model="msg" type="textarea" />
         <q-btn class="send-btn text-white" type="submit" label="Send" />
       </q-form>
@@ -53,14 +66,14 @@ export default {
   },
 
   methods: {
-    // Allowing user to add new email recipients that is on the list 
-    createEmail(newEmail, done) {
-      if (newEmail.length > 0) {
-        if (!this.allClientEmails.includes(newEmail)) {
-          this.allClientEmails.push(newEmail);
-          this.selectedEmails.push(newEmail);
+    // Allowing user to add new email recipients that is on the list
+    createRecipient(newRecipient, done) {
+      if (newRecipient.length > 0) {
+        if (!this.allClientEmails.includes(newRecipient)) {
+          this.allClientEmails.push(newRecipient);
+          this.selectedEmails.push(newRecipient);
         }
-        done(newEmail, "toggle");
+        done(newRecipient, "toggle");
       }
     },
     // Allowing user to find an email quicker by filtering through the list of all emails
@@ -76,7 +89,7 @@ export default {
         }
       });
     },
-    // calling flask-email API 
+    // calling flask-email API
     sendEmail() {
       this.$axios
         .post("/send-email", {
