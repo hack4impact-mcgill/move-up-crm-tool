@@ -88,13 +88,15 @@ def get_all_clients():
         if name is not None:
             m = Client(name=name, email=email, notes=notes, attachments=attachments)
             list_of_clients.append(m.serialize())
-            
+
     # Pagination setting that will continue to send requests until all of the records have been retrieved
-    while 'offset' in response_json: 
+    while "offset" in response_json:
         offset = response_json["offset"]
         response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?offset={}".format(offset),
-        headers={"Authorization": str(os.environ.get("API_KEY"))},
+            "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?offset={}".format(
+                offset
+            ),
+            headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
         response_json = response.json()
         for r in response_json["records"]:
@@ -154,13 +156,14 @@ def get_a_client_from_email(email):
     else:
         return "There is no client with that email, please try again."
 
+
 # get all Volunteers from Airtable
-@main.route("/volunteers", methods = ["GET"])
+@main.route("/volunteers", methods=["GET"])
 def get_all_volunteers():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
-    ) 
+    )
     response_json = response.json()
     list_of_volunteers = []
     for r in response_json["records"]:
@@ -173,8 +176,9 @@ def get_all_volunteers():
             list_of_volunteers.append(m.serialize())
     return jsonify(list_of_volunteers)
 
+
 # get a volunteer from Airtable
-@main.route("/volunteers/<id>", methods = ["GET"])
+@main.route("/volunteers/<id>", methods=["GET"])
 def get_a_volunteer(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers/{}".format(id),
@@ -193,7 +197,7 @@ def get_a_volunteer(id):
             return jsonify(volunteer)
     else:
         return "This volunteer does not exist in the database"
-        
+
 
 # Gets list of client notes based on clientid or email
 @main.route("/notes/<id>", methods=["GET"])
@@ -247,9 +251,10 @@ def send_mail():
     data = request.get_json(force=True)
     recipients = data.get("recipients")
     subject = data.get("subject")
+    body = data.get("body")
 
     if recipients is None or subject is None:
         abort(400, "Recipient(s) and subject cannot be empty")
 
-    send_email(recipients, subject)
+    send_email(recipients, subject, body)
     return "message sent!"
