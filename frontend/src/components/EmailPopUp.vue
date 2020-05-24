@@ -7,44 +7,70 @@
     </q-bar>
     <q-card-section>
       <div>
-        <q-chip
-          removable
-          @remove="removeChip($event)"
-          v-for="email in emails"
-          :key="email"
-        >{{ email }}</q-chip>
+        <q-select
+          v-model="selectedEmails"
+          multiple
+          :options="allClientEmails"
+          use-chips
+          use-input
+          input-debounce="0"
+          stack-label
+          label="To"
+        />
+        <!--           @new-value="createValue"
+        @filter="filterFn"-->
       </div>
-      <q-input v-model="text" label="Subject" />
-      <q-input v-model="text" type="textarea" />
+      <q-input v-model="subject" label="Subject" />
+      <q-input v-model="msg" type="textarea" />
       <q-btn class="send-btn text-white" type="submit" label="Send" />
     </q-card-section>
   </q-card>
 </template>
 
 <script>
+// const allClientEmails = this.allEmails;
 export default {
   name: "EmailPopup",
   data() {
     return {
-      emails: []
+      test: null,
+      selectedEmails: [],
+      allClientEmails: [],
+      subject: null,
+      msg: null,
+      filterOptions: this.allEmails
     };
   },
   props: {
-    selected: []
+    selected: Array,
+    allEmails: Array
   },
   created: function() {
     this.selected.forEach(element => {
-      this.emails.push(element.email);
+      this.selectedEmails.push(element.email);
     });
-    console.log(this.emails);
+    // this.allEmails.forEach(e => {
+    //   this.allClientEmails.push(e);
+    // });
+    this.allClientEmails = this.allEmails;
+    console.log("hello " + this.allClientEmails);
   },
   methods: {
     log(email) {
       console.log(`${email} has been removed`);
-    },
-    removeChip(event) {
-      event.value = false;
     }
+    // filterFn(val, update) {
+    //   update(() => {
+    //     if (val === "") {
+    //       this.filterOptions = this.allClientEmails;
+    //     } else {
+    //       const needle = val.toLowerCase();
+    //       this.filterOptions = this.allClientEmails.filter(
+    //         v => v.toLowerCase().indexOf(needle) > -1
+    //       );
+    //     }
+    //   });
+    // }
   }
 };
 </script>

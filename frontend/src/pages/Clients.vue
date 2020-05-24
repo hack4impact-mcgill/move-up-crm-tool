@@ -16,6 +16,8 @@
         <q-btn @click="row_expand(props.row)" flat icon="aspect_ratio" />
       </q-td>
     </q-table>
+
+    <div class="q-mt-md">Selected: {{ JSON.stringify(selected) }}</div>
     <div class="q-pa-md email-btn">
       <q-btn
         icon="email"
@@ -26,7 +28,11 @@
         @click="getSelectedEmail"
       />
       <q-dialog v-model="showEmailPopup">
-        <EmailPopup :selected="selected" @dialog-closed="showEmailPopup = false" />
+        <EmailPopup
+          :selected="selected"
+          :allEmails="allEmails"
+          @dialog-closed="showEmailPopup = false"
+        />
       </q-dialog>
     </div>
   </div>
@@ -41,6 +47,7 @@ export default {
   data() {
     return {
       showEmailPopup: false,
+      allEmails: [],
       clients: [],
       selected: [],
       //Columns of Table
@@ -96,6 +103,9 @@ export default {
         .get("/clients")
         .then(res => {
           this.clients = res.data;
+          this.clients.forEach(element => {
+            this.allEmails.push(element.email);
+          });
         })
         .catch(() => {
           this.$q.notify({
