@@ -6,6 +6,8 @@
       title="Clients"
       :data="clients"
       :columns="columns"
+      selection="multiple"
+      :selected.sync="selected"
       row-key="email"
       wrap-cells
     >
@@ -14,47 +16,56 @@
         <q-btn @click="row_expand(props.row)" flat icon="aspect_ratio" />
       </q-td>
     </q-table>
+    <div class="q-pa-md email-btn">
+      <q-btn
+        icon="email"
+        label="Email Selected Clients"
+        stack
+        color="accent"
+        style="padding: 7px;"
+        @click="getSelectedEmail"
+      />
+      <q-dialog v-model="showEmailPopup">
+        <EmailPopup :selected="selected" @dialog-closed="showEmailPopup = false" />
+      </q-dialog>
+    </div>
   </div>
 </template>
 
 <script>
-import axios from "axios";
 import ClientPopup from "../components/ClientPopup.vue";
+import EmailPopup from "../components/EmailPopup.vue";
+
 export default {
+  components: { EmailPopup },
   data() {
     return {
-      showEmailPopUp: false,
+      showEmailPopup: false,
       clients: [],
+      selected: [],
       //Columns of Table
       columns: [
         {
           name: "name",
           required: true,
           label: "Name",
-          style: "width: 150px",
           align: "left",
-          field: row => row.name,
-          //Name column color
-          classes: "bg-dark ellipsis",
-          headerClasses: "bg-accent text-white"
+          field: row => row.name
         },
         {
           name: "email",
-          style: "width: 200px",
           align: "left",
           label: "Email",
           field: "email"
         },
         {
           name: "notes",
-          style: "width: 400px",
           align: "left",
           label: "Notes",
           field: "notes"
         },
         {
           name: "expand",
-          style: "width: 100px",
           align: "right",
           label: "",
           field: "expand"
@@ -81,10 +92,23 @@ export default {
     },
     //Get all clients from backend
     getClients() {
-      const path = "http://localhost:5000/clients";
-      axios.get(path).then(res => {
-        this.clients = res.data;
-      });
+      this.$axios
+        .get("/clients")
+        .then(res => {
+          this.clients = res.data;
+        })
+        .catch(() => {
+          this.$q.notify({
+            color: "red-4",
+            position: "top",
+            textColor: "white",
+            icon: "error",
+            message: "Something went wrong, please try again"
+          });
+        });
+    },
+    getSelectedEmail: function() {
+      this.showEmailPopup = true;
     }
   },
   created() {
@@ -93,10 +117,11 @@ export default {
 };
 </script>
 
-<!--max-width: 1300px
-    margin-top: 100px-->
-
 <style lang="sass">
+.email-btn
+  float: right
+  margin: 30px
+
 .table-width
   margin: 25px
 </style>

@@ -8,7 +8,7 @@
             label="Clients"
             class="dashboard-button"
             stack
-            color="primary"
+            color="secondary"
             to="/clients"
           />
         </div>
@@ -18,7 +18,7 @@
             label="Volunteers"
             class="dashboard-button"
             stack
-            color="primary"
+            color="secondary"
             to="/volunteers"
           />
         </div>
@@ -28,7 +28,7 @@
             label="Donors"
             stack
             class="dashboard-button"
-            color="primary"
+            color="secondary"
             to="/donors"
           />
         </div>

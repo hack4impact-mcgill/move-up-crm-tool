@@ -1,5 +1,5 @@
 <template>
-  <q-card class="bg-white text-primary event-popup">
+  <q-card class="bg-white text-white event-popup">
     <q-bar class="email-bar">
       <div class="text-h6">New Message</div>
       <q-space />
@@ -9,7 +9,6 @@
       <div>
         <q-chip
           removable
-          color="primary"
           @remove="removeChip($event)"
           v-for="email in emails"
           :key="email"
@@ -17,14 +16,14 @@
       </div>
       <q-input v-model="text" label="Subject" />
       <q-input v-model="text" type="textarea" />
-      <q-btn class="send-btn text-black" color="primary" type="submit" label="Send" />
+      <q-btn class="send-btn text-white" type="submit" label="Send" />
     </q-card-section>
   </q-card>
 </template>
 
 <script>
 export default {
-  name: "EmailPopUp",
+  name: "EmailPopup",
   data() {
     return {
       emails: []
@@ -63,5 +62,6 @@ export default {
 .send-btn {
   float: right;
   margin: 10px 0px;
+  background-color: #404040;
 }
 </style>
