@@ -6,13 +6,20 @@
       title="Clients"
       :data="clients"
       :columns="columns"
+      :filter="filter"
       selection="multiple"
       :selected.sync="selected"
       row-key="email"
       wrap-cells
     >
       <template v-slot:top-right>
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <q-input
+          borderless
+          dense
+          debounce="300"
+          v-model="filter"
+          placeholder="Search"
+        >
           <template v-slot:append>
             <q-icon name="search"></q-icon>
           </template>
@@ -56,6 +63,7 @@ export default {
       showEmailPopup: false,
       allEmails: [],
       clients: [],
+      filter: "",
       selected: [],
       //Columns of Table
       columns: [
