@@ -11,12 +11,18 @@
       row-key="email"
       wrap-cells
     >
+      <template v-slot:top-right>
+        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+          <template v-slot:append>
+            <q-icon name="search"></q-icon>
+          </template>
+        </q-input>
+      </template>
       <!--Expand Button-->
       <q-td slot="body-cell-expand" slot-scope="props" :props="props">
         <q-btn @click="row_expand(props.row)" flat icon="aspect_ratio" />
       </q-td>
     </q-table>
-
     <!-- Email Client Button -->
     <div class="q-pa-md email-btn">
       <q-btn
