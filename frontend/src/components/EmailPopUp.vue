@@ -29,13 +29,15 @@
           v-model="subject"
           label="Subject"
           lazy-rules
-          :rules="[
-            val =>
-              (val && val.length > 0) || 'Please enter a subject'
-          ]"
+          :rules="[val => (val && val.length > 0) || 'Please enter a subject']"
         />
         <q-input v-model="msg" type="textarea" />
-        <q-btn class="send-btn text-white" type="submit" label="Send" />
+        <q-btn
+          class="send-btn text-white"
+          :disabled="submitting"
+          type="submit"
+          label="Send"
+        />
       </q-form>
     </q-card-section>
   </q-card>
@@ -46,6 +48,7 @@ export default {
   name: "EmailPopup",
   data() {
     return {
+      submitting: false,
       selectedEmails: [],
       allClientEmails: [],
       subject: null,
@@ -91,6 +94,7 @@ export default {
     },
     // calling flask-email API
     sendEmail() {
+      this.submitting = true;
       this.$axios
         .post("/send-email", {
           recipients: this.selectedEmails,
@@ -105,6 +109,7 @@ export default {
             icon: "cloud_done",
             message: "Successfully Sent Email"
           });
+          this.submitting = false;
           this.$emit("dialog-closed");
         })
         .catch(() => {
