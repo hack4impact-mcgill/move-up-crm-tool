@@ -1,19 +1,12 @@
 <template>
   <q-layout view="lHh Lpr lFf" id="container">
     <q-header>
-      <q-toolbar class="bg-secondary">
+      <q-toolbar class="bg-primary">
         <q-toolbar-title>
           <b>Move Up</b>
         </q-toolbar-title>
         <SignIn />
-        <q-btn
-          flat
-          round
-          color="background"
-          icon="home"
-          to="/home"
-          class="q-mx-md"
-        />
+        <q-btn flat round color="background" icon="home" to="/home" class="q-mx-md" />
       </q-toolbar>
     </q-header>
 
