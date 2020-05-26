@@ -120,6 +120,7 @@ export default {
             icon: "error",
             message: "Something went wrong, please try again"
           });
+          this.submitting = false;
         });
     }
   }
