@@ -27,7 +27,7 @@
       </template>
       <!--Expand Button-->
       <q-td slot="body-cell-expand" slot-scope="props" :props="props">
-        <q-btn @click="row_expand(props.row)" flat icon="aspect_ratio" />
+        <q-btn @click="rowExpand(props.row)" flat icon="aspect_ratio" />
       </q-td>
     </q-table>
     <!-- Email Client Button -->
@@ -57,6 +57,7 @@ import ClientPopup from "../components/ClientPopup.vue";
 import EmailPopup from "../components/EmailPopup.vue";
 
 export default {
+  name: "Clients",
   components: { EmailPopup },
   data() {
     return {
@@ -97,7 +98,7 @@ export default {
   },
   methods: {
     //Custom Dialog Box
-    row_expand(row) {
+    rowExpand(row) {
       this.$q
         .dialog({
           component: ClientPopup,
@@ -143,7 +144,7 @@ export default {
 };
 </script>
 
-<style lang="sass">
+<style scoped lang="sass">
 .email-btn
   float: right
   margin: 30px

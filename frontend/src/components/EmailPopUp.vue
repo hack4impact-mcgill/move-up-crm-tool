@@ -31,7 +31,7 @@
           lazy-rules
           :rules="[val => (val && val.length > 0) || 'Please enter a subject']"
         />
-        <q-input v-model="msg" type="textarea" />
+        <q-input v-model="msg" label="Body" type="textarea"></q-input>
         <q-btn
           class="send-btn text-white"
           :disabled="submitting"
