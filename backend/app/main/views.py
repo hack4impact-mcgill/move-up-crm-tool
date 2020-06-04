@@ -181,16 +181,18 @@ def get_a_client(id):
     c = Client(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
     return jsonify(c.serialize()), 200
 
-
 # Get a client from Airtable using client's email 
 def get_a_client_from_email(email): 
     response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(email) + ", {Client Email})", 
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
+            email
+        )
+        + ", {Client Email})",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     # Convert to JSON
     response_json = response.json()
-
+    
     # Validation check
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
@@ -489,9 +491,10 @@ def send_mail():
     data = request.get_json(force=True)
     recipients = data.get("recipients")
     subject = data.get("subject")
+    body = data.get("body")
 
     if recipients is None or subject is None:
         abort(400, "Recipient(s) and subject cannot be empty")
 
-    send_email(recipients, subject)
+    send_email(recipients, subject, body)
     return "message sent!"
