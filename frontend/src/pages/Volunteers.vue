@@ -1,0 +1,159 @@
+<!--Volunteers Table-->
+<template>
+  <div class="q-pa-md q-gutter-sm">
+    <q-table
+      class="table-width"
+      title="Volunteers"
+      :data="volunteers"
+      :columns="columns"
+      :filter="filter"
+      selection="multiple"
+      :selected.sync="selected"
+      row-key="email"
+      wrap-cells
+    >
+      <template v-slot:top-right>
+        <q-input
+          borderless
+          dense
+          debounce="300"
+          v-model="filter"
+          placeholder="Search"
+        >
+          <template v-slot:append>
+            <q-icon name="search"></q-icon>
+          </template>
+        </q-input>
+      </template>
+      <!--Expand Button
+      <q-td slot="body-cell-expand" slot-scope="props" :props="props">
+        <q-btn @click="rowExpand(props.row)" flat icon="aspect_ratio" />
+      </q-td>
+      -->
+    </q-table>
+    <!-- Email Volunteer Button -->
+    <div class="q-pa-md email-btn">
+      <q-btn
+        icon="email"
+        label="Email Selected Volunteers"
+        stack
+        color="accent"
+        style="padding: 7px;"
+        @click="getSelectedEmail"
+      />
+
+      <q-dialog v-model="showEmailPopup">
+        <EmailPopup
+          :selected="selected"
+          :allEmails="allEmails"
+          @dialog-closed="showEmailPopup = false"
+        />
+      </q-dialog>
+    </div>
+  </div>
+</template>
+
+<script>
+//import ClientPopup from "../components/ClientPopup.vue";
+import EmailPopup from "../components/EmailPopup.vue";
+
+export default {
+  name: "Volunteers",
+  components: { EmailPopup },
+  data() {
+    return {
+      showEmailPopup: false,
+      allEmails: [],
+      mentors: [],
+      filter: "",
+      selected: [],
+      //Columns of Table
+      columns: [
+        {
+          name: "name",
+          required: true,
+          label: "Name",
+          align: "left",
+          field: row => row.name
+        },
+        {
+          name: "email",
+          align: "left",
+          label: "Email",
+          field: "email"
+        },
+        /*
+        {
+          name: "notes",
+          align: "left",
+          label: "Notes",
+          field: "notes"
+        },
+        {
+          name: "expand",
+          align: "right",
+          label: "",
+          field: "expand"
+        }
+        */
+      ]
+    };
+  },
+  methods: {
+    //Custom Dialog Box
+    /*
+    rowExpand(row) {
+      this.$q
+        .dialog({
+          component: ClientPopup,
+          name: row.name,
+          email: row.email,
+          notes: row.notes,
+          attachments: row.attachments,
+          parent: this,
+          app: this.app
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
+    },
+    */
+    //Get all volunteers from backend
+    getVolunteers() {
+      this.$axios
+        .get("/mentors")
+        .then(res => {
+          this.volunteers = res.data;
+          // Add all of mentors' emails into allEmails list
+          this.volunteers.forEach(element => {
+            this.allEmails.push(element.email);
+          });
+        })
+        .catch(() => {
+          this.$q.notify({
+            color: "red-4",
+            position: "top",
+            textColor: "white",
+            icon: "error",
+            message: "Something went wrong, please try again"
+          });
+        });
+    },
+    getSelectedEmail: function() {
+      this.showEmailPopup = true;
+    }
+  },
+  created() {
+    this.getVolunteers();
+  }
+};
+</script>
+
+<style scoped lang="sass">
+.email-btn
+  float: right
+  margin: 30px
+
+.table-width
+  margin: 25px
+</style>
