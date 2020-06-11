@@ -3,7 +3,7 @@ import requests
 import os
 import re
 from flask import Flask, jsonify, request, abort, make_response
-from app.models import Mentor, Client, Volunteer, Donor
+from app.models import Mentor, Client
 from app.email import send_email
 from . import main
 
@@ -214,209 +214,6 @@ def get_a_client_from_email(email):
     c = Client(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
     return jsonify(c.serialize()), 200
 
-# VOLUNTEER ROUTE
-@main.route("/volunteers/", methods=["GET"])
-@main.route("/volunteers", methods=["GET"])
-def volunteer_route_controller():
-    id_number = request.form.get('id')
-    email = request.args.get('email')
-    if(id_number is not None and email is not None):
-        return "Bad request. ID body requests or email query parameter need to be removed.", 400
-    elif(id_number is not None):
-        return get_a_volunteer(id_number)
-    elif(email is not None):
-        return get_volunteer_by_email(email)
-    else:
-        return get_all_volunteers()
-
-# Get all Volunteers from Airtable
-def get_all_volunteers():
-    response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers",
-        headers={"Authorization": str(os.environ.get("API_KEY"))},
-    )
-    # Convert to JSON
-    response_json = response.json()
-
-    # Validation check
-    if (response.status_code // 100) != 2:
-        return response_json["error"], response.status_code
-    
-    # Create and return object
-    list_of_volunteers = [] 
-    def getResponse():  
-        for r in response_json["records"]:
-            id_number = r["id"]
-            name = r["fields"].get("Name")
-            notes = r["fields"].get("Notes")
-            email = r["fields"].get("Volunteer Email")
-            attachments = r["fields"].get("Attachments")
-            if name is not None and email is not None:
-                v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-                list_of_volunteers.append(v.serialize())
-    getResponse()
-    # Pagination setting that will continue to send requests until all of the records have been retrieved	
-    repeat_pagination(response_json, "Volunteers", getResponse)
-    return jsonify(list_of_volunteers), 200
-
-# Get a volunteer from Airtable
-def get_a_volunteer(id):
-    response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers/{}".format(id),
-        headers={"Authorization": str(os.environ.get("API_KEY"))},
-    )
-    # Convert to JSON
-    response_json = response.json()
-
-    # Validation check
-    if (response.status_code // 100) != 2:
-        return response_json["error"], response.status_code
-
-    # Get object's parameters
-    id_number = response_json["id"]
-    name = response_json["fields"].get("Name")
-    notes = response_json["fields"].get("Notes")
-    email = response_json["fields"].get("Volunteer Email")
-    attachments = response_json["fields"].get("Attachments")
-    if name is None or email is None:
-        return "There is no volunteer with this id. Please try again.", 422
-
-    #Create and return object
-    v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-    return jsonify(v.serialize()), 200
-
-# Get a volunteer from Airtable using volunteer's email 
-def get_volunteer_by_email(email): 
-    response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Volunteers?filterByFormula=SEARCH('{}'".format(email) + ", {Volunteer Email})", 
-        headers={"Authorization": str(os.environ.get("API_KEY"))},
-    )
-    # Convert to JSON
-    response_json = response.json()
-
-    # Validation check
-    if (response.status_code // 100) != 2:
-        return response_json["error"], response.status_code
-    
-    error = handleEmailResponse(response_json["records"])
-    if(error is not None):
-        return error, 422
-
-    # Get object's parameters
-    id_number = response_json["records"][0]["id"]
-    name = response_json["records"][0]["fields"].get("Name")
-    email = response_json["records"][0]["fields"].get("Volunteer Email")
-    notes = response_json["records"][0]["fields"].get("Notes")
-    attachments = response_json["records"][0]["fields"].get("Attachments")
-    if name is None or email is None:
-        return "There is no volunteer with that email. Please try again.", 422
-
-    # Create and return object
-    v = Volunteer(name=name, email=email, id_number=id_number, notes=notes, attachments=attachments)
-    return jsonify(v.serialize()), 200
-
-# DONOR ROUTE
-@main.route("/donors/", methods=["GET"])
-@main.route("/donors", methods=["GET"])
-def donor_route_controller():
-    id_number = request.form.get('id')
-    email = request.args.get('email')
-    if(id_number is not None and email is not None):
-        return "Bad request. ID body requests or email query parameter need to be removed.", 400
-    elif(id_number is not None):
-        return get_a_donor(id_number)
-    elif(email is not None):
-        return get_a_donor_from_email(email)
-    else:
-        return get_all_donors()
-    
-    
-# Get all donors from Airtable
-def get_all_donors():
-    response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors",
-        headers={"Authorization": str(os.environ.get("API_KEY"))},
-    )
-    # Convert to JSON
-    response_json = response.json()
-
-    # Validation check
-    if (response.status_code // 100) != 2:
-        return response_json["error"], response.status_code
-
-    #Create and return object
-    list_of_donors = []
-    def getResponse():
-        for r in response_json["records"]:
-            id_number = r["id"]
-            name = r["fields"].get("Name")
-            notes = r["fields"].get("Notes")
-            email = r["fields"].get("Donor Email")
-            donations = r["fields"].get("Total Donated")
-            if name is not None and email is not None:
-                d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
-                list_of_donors.append(d.serialize())
-    getResponse()
-    repeat_pagination(response_json, "Donors", getResponse)
-    return jsonify(list_of_donors), 200
-
-# Get a donor from Airtable
-def get_a_donor(id):
-    response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors/{}".format(id),
-        headers={"Authorization": str(os.environ.get("API_KEY"))},
-    )
-    # Convert to JSON
-    response_json = response.json()
-
-    # Validation check
-    if (response.status_code // 100) != 2:
-        return response_json["error"], response.status_code
-
-    # Get object's parameters
-    id_number = response_json["id"]
-    name = response_json["fields"].get("Name")
-    notes = response_json["fields"].get("Notes")
-    email = response_json["fields"].get("Donor Email")
-    donations = response_json["fields"].get("Total Donated")
-    if name is None or email is None:
-        return "There is no donor with this id. Please try again.", 422
-
-    #Create and return object    
-    d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
-    return jsonify((d.serialize())), 200
-
-
-# Get a donor from Airtable using donor's email 
-def get_a_donor_from_email(email): 
-    response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Donors?filterByFormula=SEARCH('{}'".format(email) + ", {Donor Email})", 
-        headers={"Authorization": str(os.environ.get("API_KEY"))},
-    )
-    # Convert to JSON
-    response_json = response.json()
-    # Validation check
-    if (response.status_code // 100) != 2:
-        return response_json["error"], response.status_code
-        
-    error = handleEmailResponse(response_json["records"])
-    if(error is not None):
-        return error, 422
-
-    # Get object's parameters
-    id_number = response_json["records"][0]["id"]
-    name = response_json["records"][0]["fields"].get("Name")
-    notes = response_json["records"][0]["fields"].get("Notes")
-    email = response_json["records"][0]["fields"].get("Donor Email")
-    donations = response_json["records"][0]["fields"].get("Total Donated")
-    if name is None or email is None:
-        return "There is no donor with this email. Please try again.", 422 
-
-    #Create and return object    
-    d = Donor(name=name, email=email, id_number=id_number, notes=notes, total_donated=donations)
-    return jsonify((d.serialize())), 200
-
-
 def handleEmailResponse(res):
     if (len(res)) == 0:
         return "No records in this database."
@@ -429,6 +226,7 @@ def handleEmailResponse(res):
                 errorMsg += " " + res[i]["fields"].get("Name") + ","
         return errorMsg
 
+# SECURITY WARNING: Susceptible to DDoS Attack
 def repeat_pagination(response_json, userRole, getResponse):
     while 'offset' in response_json:
         offset = response_json["offset"]	
