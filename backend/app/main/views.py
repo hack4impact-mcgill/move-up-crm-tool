@@ -14,19 +14,6 @@ def index():
 
 # Get all mentors from Airtable
 @main.route("/mentors/", methods=["GET"])
-@main.route("/mentors", methods=["GET"])
-def mentors_route_controller():
-    id_number = request.form.get('id')
-    email = request.args.get('email')
-    if(id_number is not None and email is not None):
-        return "Bad request. ID body requests or email query parameter need to be removed.", 400
-    elif(id_number is not None):
-        return get_mentor_by_id(id_number)
-    elif(email is not None):
-        return get_mentor_by_email(email)
-    else:
-        return get_all_mentors()
-
 def get_all_mentors():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors",
@@ -53,8 +40,9 @@ def get_all_mentors():
     repeat_pagination(response_json, "Mentors", getResponse)
     return jsonify(list_of_mentors), 200
 
-
 # Get a mentor by id from Airtable
+# SECURITY WARNING: Exposing database id in a URL
+@main.route("/mentors/<id>/", methods=["GET"])
 def get_mentor_by_id(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors/{}".format(id),
@@ -78,8 +66,8 @@ def get_mentor_by_id(id):
     mentor = Mentor(name=name, email=email, id_number=id_number)
     return jsonify(mentor.serialize()), 200
         
-
 # Get a mentor by email from Airtable
+@main.route("/mentors/email/<email>/", methods=["GET"])
 def get_mentor_by_email(email):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors?filterByFormula=SEARCH('{}'".format(
@@ -90,7 +78,6 @@ def get_mentor_by_email(email):
     )
     # Convert to JSON
     response_json = response.json()
-
     # Validation check
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
@@ -110,22 +97,8 @@ def get_mentor_by_email(email):
     m = Mentor(name=name, email=email, id_number=id_number)
     return jsonify(m.serialize()), 200
 
-
 # Get all clients from Airtable
 @main.route("/clients/", methods=["GET"])
-@main.route("/clients", methods=["GET"])
-def clients_route_controller():
-    id_number = request.form.get('id')
-    email = request.args.get('email')
-    if(id_number is not None and email is not None):
-        return "Bad request. ID body requests or email query parameter need to be removed.", 400
-    elif(id_number is not None):
-        return get_a_client(id_number)
-    elif(email is not None):
-        return get_a_client_from_email(email)
-    else:
-        return get_all_clients()
-
 def get_all_clients():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients",
@@ -156,6 +129,8 @@ def get_all_clients():
     return jsonify(list_of_clients), 200
 
 # Get a client from Airtable
+# SECURITY WARNING: Exposing database id in a URL
+@main.route("/clients/<id>/", methods=["GET"])
 def get_a_client(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
@@ -182,6 +157,7 @@ def get_a_client(id):
     return jsonify(c.serialize()), 200
 
 # Get a client from Airtable using client's email 
+@main.route("/clients/email/<email>/", methods=["GET"])
 def get_a_client_from_email(email): 
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
