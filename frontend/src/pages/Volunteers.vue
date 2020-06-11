@@ -25,11 +25,6 @@
           </template>
         </q-input>
       </template>
-      <!--Expand Button
-      <q-td slot="body-cell-expand" slot-scope="props" :props="props">
-        <q-btn @click="rowExpand(props.row)" flat icon="aspect_ratio" />
-      </q-td>
-      -->
     </q-table>
     <!-- Email Volunteer Button -->
     <div class="q-pa-md email-btn">
@@ -54,7 +49,6 @@
 </template>
 
 <script>
-//import ClientPopup from "../components/ClientPopup.vue";
 import EmailPopup from "../components/EmailPopup.vue";
 
 export default {
@@ -64,7 +58,7 @@ export default {
     return {
       showEmailPopup: false,
       allEmails: [],
-      mentors: [],
+      volunteers: [],
       filter: "",
       selected: [],
       //Columns of Table
@@ -82,49 +76,17 @@ export default {
           label: "Email",
           field: "email"
         },
-        /*
-        {
-          name: "notes",
-          align: "left",
-          label: "Notes",
-          field: "notes"
-        },
-        {
-          name: "expand",
-          align: "right",
-          label: "",
-          field: "expand"
-        }
-        */
       ]
     };
   },
   methods: {
-    //Custom Dialog Box
-    /*
-    rowExpand(row) {
-      this.$q
-        .dialog({
-          component: ClientPopup,
-          name: row.name,
-          email: row.email,
-          notes: row.notes,
-          attachments: row.attachments,
-          parent: this,
-          app: this.app
-        })
-        .onOk(() => {})
-        .onCancel(() => {})
-        .onDismiss(() => {});
-    },
-    */
     //Get all volunteers from backend
     getVolunteers() {
       this.$axios
-        .get("/mentors")
+        .get("/mentors")  //volunteers == mentors
         .then(res => {
           this.volunteers = res.data;
-          // Add all of mentors' emails into allEmails list
+          // Add all of volunteers' emails into allEmails list
           this.volunteers.forEach(element => {
             this.allEmails.push(element.email);
           });
