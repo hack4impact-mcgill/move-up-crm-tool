@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 
 from flask_script import Manager
 
@@ -13,8 +14,9 @@ if os.path.exists(".env"):
 
 from app import create_app
 
-app = create_app(os.getenv("FLASK_CONFIG") or "default")
-manager = Manager(app)
+manager = Manager(create_app)
+# e.g. "python manage.py --config development runserver"
+manager.add_option("-c", "--config", dest="config_name", required=False)
 
 
 @manager.command
