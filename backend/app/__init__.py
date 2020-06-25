@@ -22,8 +22,11 @@ def create_app(config_name):
 
     # set up Flask Mail extension
     mail.init_app(app)
+
+    # call init_app to complete initialization
     migrate.init_app(app)
 
+    # create app blueprint
     from .main import main as main_blueprint
 
     app.register_blueprint(main_blueprint)
