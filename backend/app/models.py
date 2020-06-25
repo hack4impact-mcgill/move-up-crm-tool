@@ -1,15 +1,15 @@
 import json
-from werkzeug.security import generate_password_hash, check_password_hash
 
 # create model classes here
 class User:
     # constructor
-    def __init__(self, name, email):
+    def __init__(self, name, email, id_number):
         self.name = name
         self.email = email
+        self.id_number = id_number
 
     def serialize(self):
-        return {"name": self.name, "email": self.email}
+        return {"name": self.name, "email": self.email, "id": self.id_number}
 
 
 class Mentor(User):
@@ -17,38 +17,13 @@ class Mentor(User):
 
 
 class Client(User):
-
     # constructor
-    def __init__(self, name, email, notes, attachments):
-        super().__init__(name, email)
+    def __init__(self, name, email, id_number, notes, attachments):
+        super().__init__(name, email, id_number)
         self.notes = notes
         self.attachments = attachments
-
-    def serialize(self):
-        return {
-            "name": self.name,
-            "email": self.email,
-            "notes": self.notes,
-            "attachments": self.attachments,
-        }
-
-
-class Volunteer(User):
     
-    #constructor
-    def __init__(self, name, email, notes, attachments):
-        super().__init__(name, email)
-        self.notes = notes
-        self.attachments = attachments
-
     def serialize(self):
-        return {
-            "name": self.name,
-            "email": self.email,
-            "notes": self.notes,
-            "attachments": self.attachments,
-        }
-
-
-class Donor(User):
-    pass
+        new_dict = super().serialize()
+        new_dict.update({"notes": self.notes, "attachments": self.attachments})
+        return new_dict
