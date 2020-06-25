@@ -3,7 +3,6 @@ import os
 import sys
 
 from flask_script import Manager
-from flask_migrate import Migrate, MigrateCommand
 
 # Import settings from .env file. Must define FLASK_CONFIG
 if os.path.exists(".env"):

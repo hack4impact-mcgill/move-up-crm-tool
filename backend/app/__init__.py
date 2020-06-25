@@ -4,10 +4,8 @@ import os
 from flask_cors import CORS
 from config import config
 from flask_cors import CORS
-from flask_migrate import Migrate, MigrateCommand
 
 mail = Mail()
-migrate = Migrate()
 
 
 def create_app(config_name):
@@ -22,9 +20,6 @@ def create_app(config_name):
 
     # set up Flask Mail extension
     mail.init_app(app)
-
-    # call init_app to complete initialization
-    migrate.init_app(app)
 
     # create app blueprint
     from .main import main as main_blueprint
