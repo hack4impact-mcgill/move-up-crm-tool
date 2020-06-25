@@ -15,7 +15,7 @@ def create_app(config_name):
     CORS(app)
 
     if config_name is None:
-        config_name = os.getenv("FLASK_CONFIG" or "default")
+        config_name = os.getenv("FLASK_CONFIG") or "default"
 
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
