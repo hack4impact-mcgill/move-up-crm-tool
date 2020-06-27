@@ -30,10 +30,18 @@ export default function(/* { store, ssrContext } */) {
   Router.beforeEach((to, from, next) => {
     let requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     let isAuthorized = Store.state.userExists;
-    if (requiresAuth && !isAuthorized) {
-      next("/");
+    if (requiresAuth) {
+      if (!isAuthorized) {
+        next("/")
+      } else {
+        next()
+      }
     } else {
-      next();
+      if (isAuthorized) {
+        next("/home")
+      } else {
+        next()
+      }
     }
   });
 

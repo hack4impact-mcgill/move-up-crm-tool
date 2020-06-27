@@ -1,31 +1,31 @@
 const routes = [
   {
     path: "/",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/Index.vue") }]
+    meta: { requiresAuth: false },
+    component: () => import("pages/SignInPage.vue"),
   },
   {
     path: "/home",
     component: () => import("layouts/MainLayout.vue"),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [{ path: "", component: () => import("pages/Dashboard.vue") }]
   },
   {
     path: "/clients",
     component: () => import("layouts/MainLayout.vue"),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [{ path: "", component: () => import("pages/Clients.vue") }]
   },
   {
     path: "/donors",
     component: () => import("layouts/MainLayout.vue"),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [{ path: "", component: () => import("pages/Donors.vue") }]
   },
   {
     path: "/volunteers",
     component: () => import("layouts/MainLayout.vue"),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [{ path: "", component: () => import("pages/Volunteers.vue") }]
   }
 ];

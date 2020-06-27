@@ -18,6 +18,7 @@ export default {
   },
   mounted() {
     window.gapi.signin2.render("signin-button", {
+      longtitle: true,
       onsuccess: this.onSignIn
     });
   },
@@ -27,13 +28,16 @@ export default {
       let user = auth2.currentUser.get().getBasicProfile();
       await this.$store.dispatch("login", user).then(() => {
         this.signedIn = this.$store.state.userExists;
-      });
+      })
+      .then(() => this.$router.push("/home"))
     },
     onSignOut() {
       let auth2 = window.gapi.auth2.getAuthInstance();
       this.$store.dispatch("logout");
       this.signedIn = this.$store.state.userExists;
-      auth2.signOut();
+      auth2.signOut().then(() => {
+        this.$router.push("/");
+      })
     }
   }
 };
