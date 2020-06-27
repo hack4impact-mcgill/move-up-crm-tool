@@ -2,16 +2,24 @@
 <template>
   <div class="q-pa-md q-gutter-sm">
     <q-table
-        class="table-width"
-        title="Clients"
-        :data="clients"
-        :columns="columns"
-        :filter="filter"
-        row-key="email"
-        wrap-cells
+      class="table-width"
+      title="Clients"
+      :data="clients"
+      :columns="columns"
+      :filter="filter"
+      selection="multiple"
+      :selected.sync="selected"
+      row-key="email"
+      wrap-cells
     >
       <template v-slot:top-right>
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <q-input
+          borderless
+          dense
+          debounce="300"
+          v-model="filter"
+          placeholder="Search"
+        >
           <template v-slot:append>
             <q-icon name="search"></q-icon>
           </template>
@@ -19,51 +27,68 @@
       </template>
       <!--Expand Button-->
       <q-td slot="body-cell-expand" slot-scope="props" :props="props">
-        <q-btn @click="row_expand(props.row)" flat icon="aspect_ratio" />
+        <q-btn @click="rowExpand(props.row)" flat icon="aspect_ratio" />
       </q-td>
     </q-table>
-    
+    <!-- Email Client Button -->
+    <div class="q-pa-md email-btn">
+      <q-btn
+        icon="email"
+        label="Email Selected Clients"
+        stack
+        color="accent"
+        style="padding: 7px;"
+        @click="getSelectedEmail"
+      />
+
+      <q-dialog v-model="showEmailPopup">
+        <EmailPopup
+          :selected="selected"
+          :allEmails="allEmails"
+          @dialog-closed="showEmailPopup = false"
+        />
+      </q-dialog>
+    </div>
   </div>
 </template>
 
 <script>
-import axios from "axios";
 import ClientPopup from "../components/ClientPopup.vue";
+import EmailPopup from "../components/EmailPopup.vue";
+
 export default {
+  name: "Clients",
+  components: { EmailPopup },
   data() {
     return {
+      showEmailPopup: false,
+      allEmails: [],
       clients: [],
-      filter: '',
+      filter: "",
+      selected: [],
       //Columns of Table
       columns: [
         {
-          name: "desc",
+          name: "name",
           required: true,
           label: "Name",
-          style: "width: 150px",
           align: "left",
-          field: row => row.name,
-          //Name column color
-          classes: "bg-dark ellipsis",
-          headerClasses: "bg-accent text-white"
+          field: row => row.name
         },
         {
           name: "email",
-          style: "width: 200px",
           align: "left",
           label: "Email",
           field: "email"
         },
         {
           name: "notes",
-          style: "width: 400px",
           align: "left",
           label: "Notes",
           field: "notes"
         },
         {
           name: "expand",
-          style: "width: 100px",
           align: "right",
           label: "",
           field: "expand"
@@ -73,15 +98,16 @@ export default {
   },
   methods: {
     //Custom Dialog Box
-    row_expand(row) {
-        this.$q.dialog({
-            component: ClientPopup,
-            name: row.name,
-            email: row.email,
-            notes: row.notes,
-            attachments: row.attachments,
-            parent: this,
-            app: this.app
+    rowExpand(row) {
+      this.$q
+        .dialog({
+          component: ClientPopup,
+          name: row.name,
+          email: row.email,
+          notes: row.notes,
+          attachments: row.attachments,
+          parent: this,
+          app: this.app
         })
         .onOk(() => {})
         .onCancel(() => {})
@@ -89,10 +115,27 @@ export default {
     },
     //Get all clients from backend
     getClients() {
-      const path = "http://localhost:5000/clients";
-      axios.get(path).then(res => {
-        this.clients = res.data;
-      });
+      this.$axios
+        .get("/clients")
+        .then(res => {
+          this.clients = res.data;
+          // Add all of clients' emails into allEmails list
+          this.clients.forEach(element => {
+            this.allEmails.push(element.email);
+          });
+        })
+        .catch(() => {
+          this.$q.notify({
+            color: "red-4",
+            position: "top",
+            textColor: "white",
+            icon: "error",
+            message: "Something went wrong, please try again"
+          });
+        });
+    },
+    getSelectedEmail: function() {
+      this.showEmailPopup = true;
     }
   },
   created() {
@@ -101,10 +144,11 @@ export default {
 };
 </script>
 
-<!--max-width: 1300px
-    margin-top: 100px-->
+<style scoped lang="sass">
+.email-btn
+  float: right
+  margin: 30px
 
-<style lang="sass">
-.table-width  
-    margin: 25px
+.table-width
+  margin: 25px
 </style>
