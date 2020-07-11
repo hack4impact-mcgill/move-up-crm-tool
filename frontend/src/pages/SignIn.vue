@@ -8,6 +8,9 @@
       id="signin-button"
     />
     <q-btn v-show="signedIn" @click="onSignOut" no-caps flat label="Sign out" />
+    <button
+      @click="onSignOut"
+    >test sign out</button>
   </div>
 </template>
 
