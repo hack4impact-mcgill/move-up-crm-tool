@@ -119,6 +119,16 @@ def get_all_clients():
     )
     # Convert to JSON
     response_json = response.json()
+    list_of_clients = []
+    for r in response_json["records"]:
+        name = r["fields"].get("Name")
+        notes = r["fields"].get("Notes")
+        email = r["fields"].get("Client Email")
+        attachments = r["fields"].get("Attachments")
+        if name is not None:
+            m = Client(name=name, email=email, notes=notes,
+                       attachments=attachments)
+            list_of_clients.append(m.serialize())
 
     # Validation check
     if (response.status_code // 100) != 2:
@@ -174,7 +184,11 @@ def get_a_client(id):
     return jsonify(c.serialize()), 200
 
 # Get a client from Airtable using client's email
+<<<<<<< HEAD
 @main.route("/clients/email/<email>", methods=["GET"])
+=======
+@main.route("/clients/email/<email>/", methods=["GET"])
+>>>>>>> Fix sign in button consistency. Migrate local storage to JWT and cookie storage. Working but still insecure.
 def get_a_client_from_email(email):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
