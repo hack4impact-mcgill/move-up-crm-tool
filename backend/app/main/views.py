@@ -13,7 +13,7 @@ def index():
     return "Hello World!"
 
 # Get all mentors from Airtable
-@main.route("/mentors/", methods=["GET"])
+@main.route("/mentors", methods=["GET"])
 def get_all_mentors():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors",
@@ -42,7 +42,7 @@ def get_all_mentors():
 
 # Get a mentor by id from Airtable
 # SECURITY WARNING: Exposing database id in a URL
-@main.route("/mentors/<id>/", methods=["GET"])
+@main.route("/mentors/<id>", methods=["GET"])
 def get_mentor_by_id(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors/{}".format(id),
@@ -67,7 +67,7 @@ def get_mentor_by_id(id):
     return jsonify(mentor.serialize()), 200
         
 # Get a mentor by email from Airtable
-@main.route("/mentors/email/<email>/", methods=["GET"])
+@main.route("/mentors/email/<email>", methods=["GET"])
 def get_mentor_by_email(email):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors?filterByFormula=SEARCH('{}'".format(
@@ -98,7 +98,7 @@ def get_mentor_by_email(email):
     return jsonify(m.serialize()), 200
 
 # Get all clients from Airtable
-@main.route("/clients/", methods=["GET"])
+@main.route("/clients", methods=["GET"])
 def get_all_clients():
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients",
@@ -130,7 +130,7 @@ def get_all_clients():
 
 # Get a client from Airtable
 # SECURITY WARNING: Exposing database id in a URL
-@main.route("/clients/<id>/", methods=["GET"])
+@main.route("/clients/<id>", methods=["GET"])
 def get_a_client(id):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
@@ -157,7 +157,7 @@ def get_a_client(id):
     return jsonify(c.serialize()), 200
 
 # Get a client from Airtable using client's email 
-@main.route("/clients/email/<email>/", methods=["GET"])
+@main.route("/clients/email/<email>", methods=["GET"])
 def get_a_client_from_email(email): 
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
