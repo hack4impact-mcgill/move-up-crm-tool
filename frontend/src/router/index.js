@@ -3,8 +3,23 @@ import VueRouter from "vue-router";
 
 import routes from "./routes";
 import Store from "../store/index";
+import axios from "axios";
+import config from "../config";
+import { Cookies } from "quasar";
 
 Vue.use(VueRouter);
+
+// Axios config
+const frontendUrl = config.build.host + ":" + config.build.port;
+const backendUrl = config.build.backendHost + ":" + config.build.backendPort;
+
+var AXIOS = axios.create({
+  baseURL: backendUrl,
+  headers: {
+    "Access-Control-Allow-Origin": frontendUrl,
+    "Content-Type": "application/json"
+  }
+});
 
 /*
  * If not building with SSR mode, you can
@@ -15,7 +30,7 @@ Vue.use(VueRouter);
  * with the Router instance.
  */
 
-export default function(/* { store, ssrContext } */) {
+export default function (/* { store, ssrContext } */) {
   const Router = new VueRouter({
     scrollBehavior: () => ({ x: 0, y: 0 }),
     routes,
@@ -31,7 +46,28 @@ export default function(/* { store, ssrContext } */) {
     let requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     let isAuthorized = Store.state.userExists;
     if (requiresAuth && !isAuthorized) {
-      next("/");
+      // console.log(Cookies.get("csrf_refresh_token"))
+      AXIOS.post("/auth/token/refresh", null, {
+        headers: {
+          "X-CSRF-TOKEN": Cookies.get("csrf_refresh_token")
+        },
+        withCredentials: true
+      })
+        .then(resp => {
+          Store.dispatch("setUser", resp.data.user);
+          next();
+        })
+        .catch(() => {
+          // token is invalid or user not logged in
+          Store.dispatch("logout").then(
+            next({
+              // path: "/sign-in",
+              path: "/",
+              query: { redirect: to.fullPath }
+            })
+          );
+          next();
+        });
     } else {
       next();
     }

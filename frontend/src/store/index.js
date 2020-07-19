@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
+import { Cookies } from "quasar";
 
 Vue.use(Vuex);
 
@@ -21,9 +22,13 @@ var AXIOS = axios.create({
 const Store = new Vuex.Store({
   state: {
     status: "",
-    token: localStorage.getItem("token") || "",
     currentUser: {},
     userExists: false
+  },
+  getters: {
+    getSign(state) {
+      return state.userExists;
+    }
   },
   mutations: {
     auth_request(state) {
@@ -31,7 +36,6 @@ const Store = new Vuex.Store({
     },
     auth_success(state, authObj) {
       state.status = "success";
-      state.token = authObj.token;
       state.currentUser = authObj.user;
       state.userExists = true;
     },
@@ -40,37 +44,54 @@ const Store = new Vuex.Store({
     },
     logout(state) {
       state.status = "";
-      state.token = "";
       state.currentUser = {};
       state.userExists = false;
+    },
+    set_user(state, user) {
+      state.currentUser = user;
+      state.userExists = true;
     }
   },
   actions: {
-    async login({ commit }, user) {
-      const token = user.getId();
-      const email = user.getEmail();
-      commit("auth_request");
-      await AXIOS.get("/mentors/email/" + email).then(resp => {
-        if (resp.data.name) {
-          user = resp.data.name;
-          localStorage.setItem("token", token);
-          axios.defaults.headers.common["Authorization"] = token;
-          commit("auth_success", { token, user });
-          return;
-        } else {
-          localStorage.removeItem("token");
-          commit("auth_error");
-          return;
-        }
+    login({ commit }, user) {
+      return new Promise((resolve, reject) => {
+        commit("auth_request");
+        const email = user.getEmail();
+        const id = user.getId();
+        AXIOS.post(
+          "/auth/login",
+          { email: email, id: id },
+          { withCredentials: true }
+        )
+          .then(resp => {
+            const user = resp.data.user;
+            commit("auth_success", { user });
+            resolve(resp);
+          })
+          .catch(err => {
+            commit("auth_error");
+            reject(err);
+          });
       });
     },
     logout({ commit }) {
-      return new Promise(resolve => {
-        commit("logout");
-        localStorage.removeItem("token");
-        delete axios.defaults.headers.common["Authorization"];
-        resolve();
+      return new Promise((resolve, reject) => {
+        AXIOS.post("/auth/logout", null, {
+          headers: {
+            "X-CSRF-TOKEN": Cookies.get("csrf_access_token")
+          }
+        })
+          .then(resp => {
+            commit("logout");
+            resolve(resp);
+          })
+          .catch(err => {
+            reject(err);
+          });
       });
+    },
+    setUser({ commit }, user) {
+      commit("set_user", user);
     }
   },
   modules: {},
