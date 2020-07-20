@@ -317,7 +317,8 @@ def login():
 
     # get mentor
     mentor = get_mentor_by_email(email)
-    # if valid mentor
+
+    # check if valid mentor
     if mentor[1] == 200:
         # create user
         user_info = json.loads(mentor[0].response[0])
@@ -335,35 +336,24 @@ def login():
         set_access_cookies(resp, access_token)
         set_refresh_cookies(resp, refresh_token)
 
-        print("********************\n\n\n")
-        # print(resp.headers)
-        print("\n\n\n********************")
-
         return resp, 200
 
     return "Wrong email or password!", 400
 
 
 @main.route("/auth/token/refresh", methods=["POST"])
-# @jwt_refresh_token_required
 def refresh_token():
 
     # create the new access token
-    current_user_id = get_jwt_identity()
-    # access_token = create_access_token(identity=current_user_id)
     access_token = request.headers["Cookie"].split(";")[0].split("=")[1]
 
-    print("------------------\n\n\n")
-    print(current_user_id)
-    print(decode_token(access_token))
-    print("\n\n\n------------------")
+    # get mentor
+    mentor_id = decode_token(access_token)['identity']
+    mentor = get_mentor_by_id(mentor_id)
 
-    # get user
-    # mentor = get_mentor_by_id(current_user_id)
-    id = decode_token(access_token)['identity']
-    mentor = get_mentor_by_id(id)
-
+    # check if valid mentor
     if mentor[1] == 200:
+        # create user
         user_info = json.loads(mentor[0].response[0])
         user = Mentor(
             name=user_info["name"],
@@ -375,13 +365,6 @@ def refresh_token():
         resp = jsonify({"user": user.serialize()})
         set_access_cookies(resp, access_token)
 
-        # set headers
-        resp.headers.add("Access-Control-Allow-Headers", "*")
-        resp.headers.add("Access-Control-Allow-Methods", "POST,OPTIONS")
-        resp.headers.add("Access-Control-Allow-Origin",
-                         request.headers["origin"])
-        resp.headers.add("Access-Control-Allow-Credentials", "true")
-
         return resp, 200
 
     return "Invalid id", 400
@@ -389,7 +372,6 @@ def refresh_token():
 
 # log out an existing user
 @main.route("/auth/logout", methods=["POST"])
-# @jwt_required
 def logout():
     resp = jsonify("Logged out successfully")
     unset_jwt_cookies(resp)

@@ -46,7 +46,6 @@ export default function (/* { store, ssrContext } */) {
     let requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     let isAuthorized = Store.state.userExists;
     if (requiresAuth && !isAuthorized) {
-      // console.log(Cookies.get("csrf_refresh_token"))
       AXIOS.post("/auth/token/refresh", null, {
         headers: {
           "X-CSRF-TOKEN": Cookies.get("csrf_refresh_token")
@@ -61,8 +60,7 @@ export default function (/* { store, ssrContext } */) {
           // token is invalid or user not logged in
           Store.dispatch("logout").then(
             next({
-              // path: "/sign-in",
-              path: "/",
+              path: "/sign-in",
               query: { redirect: to.fullPath }
             })
           );
