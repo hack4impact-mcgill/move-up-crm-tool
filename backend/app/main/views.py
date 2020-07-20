@@ -322,11 +322,16 @@ def login():
     # get mentor
     mentor = get_mentor_by_email(email)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     # check if valid mentor
 =======
     # if valid mentor
 >>>>>>> Fix sign in button consistency. Migrate local storage to JWT and cookie storage. Working but still insecure.
+=======
+
+    # check if valid mentor
+>>>>>>> Remove commented code. Change frontend request url to localhost ip.
     if mentor[1] == 200:
         # create user
         user_info = json.loads(mentor[0].response[0])
