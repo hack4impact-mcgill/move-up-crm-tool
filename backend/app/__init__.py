@@ -18,7 +18,6 @@ def create_app(config_name):
                  "origins": [
                      r"http://localhost:*",
                      r"http://127.0.0.1:*",
-                     r"http://192.168.0.11:*",
                  ]
              }
          },)
@@ -29,13 +28,6 @@ def create_app(config_name):
 
     # set up JWT cookie management
     app.config.from_object(config[config_name])
-    # app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-    # app.config["JWT_CSRF_IN_COOKIES"] = True
-    # # True if config_name == "production" else False
-    # # app.config["JWT_COOKIE_SECURE"] = False
-    # # if config_name == "testing" else True
-    # app.config["JWT_COOKIE_CSRF_PROTECT"] = True
-    # app.config["JWT_SECRET_KEY"] = app.config["SECRET_KEY"]
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
     app.config["JWT_COOKIE_SECURE"] = True if config_name == "production" else False
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False if config_name == "testing" else True
