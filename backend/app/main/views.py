@@ -119,16 +119,6 @@ def get_all_clients():
     )
     # Convert to JSON
     response_json = response.json()
-    list_of_clients = []
-    for r in response_json["records"]:
-        name = r["fields"].get("Name")
-        notes = r["fields"].get("Notes")
-        email = r["fields"].get("Client Email")
-        attachments = r["fields"].get("Attachments")
-        if name is not None:
-            m = Client(name=name, email=email, notes=notes,
-                       attachments=attachments)
-            list_of_clients.append(m.serialize())
 
     # Validation check
     if (response.status_code // 100) != 2:
@@ -316,6 +306,7 @@ def send_mail():
 @main.route("/auth/login", methods=["POST"])
 def login():
     # required in body: email: String
+
     data = request.get_json(force=True)
     email = data.get("email")
 
