@@ -45,7 +45,8 @@ export default function (/* { store, ssrContext } */) {
   Router.beforeEach((to, from, next) => {
     let requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     let isAuthorized = Store.state.userExists;
-    if (requiresAuth && !isAuthorized) {
+    if (requiresAuth && !isAuthorized) next("/");
+    else if (requiresAuth && isAuthorized) {
       AXIOS.post("/auth/token/refresh", null, {
         headers: {
           "X-CSRF-TOKEN": Cookies.get("csrf_refresh_token")
