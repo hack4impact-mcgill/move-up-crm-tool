@@ -173,9 +173,9 @@ def get_a_client(id):
                notes=notes, attachments=attachments)
     return jsonify(c.serialize()), 200
 
-# Get a client from Airtable using client's email 
+# Get a client from Airtable using client's email
 @main.route("/clients/email/<email>", methods=["GET"])
-def get_a_client_from_email(email): 
+def get_a_client_from_email(email):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
             email
