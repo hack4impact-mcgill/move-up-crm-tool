@@ -21,11 +21,7 @@ const routes = [
     meta: { requiresAuth: true },
     children: [{ path: "", component: () => import("pages/Volunteers.vue") }]
   },
-  {
-    path: "/sign-in",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/SignIn.vue") }]
-  }
+ 
 ];
 
 // Always leave this as last one

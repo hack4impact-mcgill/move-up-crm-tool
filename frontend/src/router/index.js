@@ -61,7 +61,7 @@ export default function (/* { store, ssrContext } */) {
           // token is invalid or user not logged in
           Store.dispatch("logout").then(
             next({
-              path: "/sign-in",
+              path: "/",
               query: { redirect: to.fullPath }
             })
           );
