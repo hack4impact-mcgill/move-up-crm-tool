@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import SignIn from "../pages/SignIn.vue";
+import SignIn from "../components/SignIn.vue";
 
 export default {
   components: { SignIn }

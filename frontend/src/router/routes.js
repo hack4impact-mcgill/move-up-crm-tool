@@ -7,20 +7,25 @@ const routes = [
   {
     path: "/home",
     component: () => import("layouts/MainLayout.vue"),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [{ path: "", component: () => import("pages/Dashboard.vue") }]
   },
   {
     path: "/clients",
     component: () => import("layouts/MainLayout.vue"),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [{ path: "", component: () => import("pages/Clients.vue") }]
   },
   {
     path: "/volunteers",
     component: () => import("layouts/MainLayout.vue"),
-    // meta: { requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [{ path: "", component: () => import("pages/Volunteers.vue") }]
+  },
+  {
+    path: "/sign-in",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/SignIn.vue") }]
   }
 ];
 
