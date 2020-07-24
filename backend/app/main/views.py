@@ -174,11 +174,7 @@ def get_a_client(id):
     return jsonify(c.serialize()), 200
 
 # Get a client from Airtable using client's email
-<<<<<<< HEAD
 @main.route("/clients/email/<email>", methods=["GET"])
-=======
-@main.route("/clients/email/<email>/", methods=["GET"])
->>>>>>> Fix sign in button consistency. Migrate local storage to JWT and cookie storage. Working but still insecure.
 def get_a_client_from_email(email):
     response = requests.get(
         "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
