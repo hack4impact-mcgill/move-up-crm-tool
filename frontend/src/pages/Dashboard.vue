@@ -22,16 +22,6 @@
             to="/volunteers"
           />
         </div>
-        <div class="col">
-          <q-btn
-            icon="accessibility"
-            label="Donors"
-            stack
-            class="dashboard-button"
-            color="secondary"
-            to="/donors"
-          />
-        </div>
       </div>
     </div>
   </q-page>
@@ -41,9 +31,9 @@
 
 <style lang="scss" scoped>
 .dashboard-button {
-  width: 180px;
-  height: 120px;
-  margin: 15px;
-  font-size: 15px;
+  width: 220px;
+  height: 160px;
+  margin: 45px;
+  font-size: 17px;
 }
 </style>
