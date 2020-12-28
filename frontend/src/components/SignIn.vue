@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div v-show="!signedIn">
+      <q-btn no-caps id="signin-button" label="Log In" />
+    </div>
     <div v-show="signedIn">
       <q-btn @click="onSignOut" no-caps flat label="Sign out" />
     </div>
@@ -8,10 +11,14 @@
 
 <script>
 export default {
+  name: "SignIn",
   data() {
     return { signedIn: false };
   },
   mounted() {
+    window.gapi.signin2.render("signin-button", {
+      onsuccess: this.onSignIn
+    });
     this.signedIn = this.$store.getters.getSign;
   },
   computed: {
@@ -27,13 +34,27 @@ export default {
     }
   },
   methods: {
+    async onSignIn() {
+      // Sign into Google Auth2 and retrieve profile
+      let auth2 = window.gapi.auth2.getAuthInstance();
+      let user = auth2.currentUser.get().getBasicProfile();
+      // Update state and navigate to Home page
+      this.$store.dispatch("login", user).then(() =>
+        this.$router.push({ path: "/home" }).catch(e => {
+          console.log(e);
+        })
+      );
+    },
     onSignOut() {
       // Sign out of Google Auth2 object and update state
       let auth2 = window.gapi.auth2.getAuthInstance();
       auth2.signOut();
       // Update state and navigate to sign in page
-      this.$store.dispatch("logout");
-      this.$router.push("/");
+      this.$store.dispatch("logout").then(() =>
+        this.$router.push({ path: "/" }).catch(e => {
+          console.log(e);
+        })
+      );
     }
   }
 };
