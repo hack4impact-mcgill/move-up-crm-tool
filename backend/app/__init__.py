@@ -24,7 +24,6 @@ def create_app(config_name):
     # set up JWT cookie management
     app.config.from_object(config[config_name])
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-    # app.config["CORS_HEADERS"] = "Content-Type"
     app.config["JWT_COOKIE_SECURE"] = True if config_name == "production" else False
     app.config["JWT_COOKIE_SAMESITE"] = "None" if config_name == "production" else None
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False if config_name == "testing" else True
