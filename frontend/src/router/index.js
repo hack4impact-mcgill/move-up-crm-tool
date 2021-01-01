@@ -30,7 +30,7 @@ var AXIOS = axios.create({
  * with the Router instance.
  */
 
-export default function (/* { store, ssrContext } */) {
+export default function(/* { store, ssrContext } */) {
   const Router = new VueRouter({
     scrollBehavior: () => ({ x: 0, y: 0 }),
     routes,
@@ -45,8 +45,13 @@ export default function (/* { store, ssrContext } */) {
   Router.beforeEach((to, from, next) => {
     let requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     let isAuthorized = Store.state.userExists;
-    if (requiresAuth && !isAuthorized) next("/");
-    else if (requiresAuth && isAuthorized) {
+
+    if (requiresAuth && !isAuthorized) {
+      next({
+        path: "/",
+        query: { redirect: to.fullPath }
+      });
+    } else if (requiresAuth && isAuthorized) {
       AXIOS.post("/auth/token/refresh", null, {
         headers: {
           "X-CSRF-TOKEN": Cookies.get("csrf_refresh_token")

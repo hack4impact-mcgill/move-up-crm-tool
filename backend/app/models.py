@@ -22,7 +22,7 @@ class Client(User):
         super().__init__(name, email, id_number)
         self.notes = notes
         self.attachments = attachments
-    
+
     def serialize(self):
         new_dict = super().serialize()
         new_dict.update({"notes": self.notes, "attachments": self.attachments})

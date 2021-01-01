@@ -7,9 +7,9 @@ Vue.use(Vuex);
 
 // Axios config
 const frontendUrl =
-  process.env.NODE_ENV === "development" ? "http://127.0.0.1:8080/" : "";
+  process.env.NODE_ENV === "development" ? "http://localhost:8080" : "";
 const backendUrl =
-  process.env.NODE_ENV === "development" ? "http://127.0.0.1:5000/" : "";
+  process.env.NODE_ENV === "development" ? "http://localhost:5000" : "";
 
 var AXIOS = axios.create({
   baseURL: backendUrl,
@@ -79,7 +79,8 @@ const Store = new Vuex.Store({
         AXIOS.post("/auth/logout", null, {
           headers: {
             "X-CSRF-TOKEN": Cookies.get("csrf_access_token")
-          }
+          },
+          withCredentials: true
         })
           .then(resp => {
             commit("logout");

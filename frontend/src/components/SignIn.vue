@@ -35,15 +35,23 @@ export default {
   },
   methods: {
     async onSignIn() {
-      // Sign into Google Auth2 and retrieve profile
+      // Sign into Google OAuth and retrieve profile
       let auth2 = window.gapi.auth2.getAuthInstance();
       let user = auth2.currentUser.get().getBasicProfile();
       // Update state and navigate to Home page
-      this.$store.dispatch("login", user).then(() =>
-        this.$router.push({ path: "/home" }).catch(e => {
-          console.log(e);
+      this.$store
+        .dispatch("login", user)
+        .then(() => {
+          const path = "/home";
+          if (this.$router.currentRoute.path !== path) {
+            this.$router.push({ path });
+          }
         })
-      );
+        .catch(() => {
+          alert(
+            "No Move Up user exists for this Google account! Please add user info to Airtable to log in."
+          );
+        });
     },
     onSignOut() {
       // Sign out of Google Auth2 object and update state
