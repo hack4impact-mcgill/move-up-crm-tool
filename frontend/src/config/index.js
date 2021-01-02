@@ -1,9 +1,9 @@
 export default {
   build: {
-    host: process.env.NODE_ENV === "development" ? "http://127.0.0.1" : "",
+    host: process.env.NODE_ENV === "development" ? "http://localhost" : "",
     port: process.env.NODE_ENV === "development" ? 8080 : 443,
     backendHost:
-      process.env.NODE_ENV === "development" ? "http://127.0.0.1" : "",
+      process.env.NODE_ENV === "development" ? "http://localhost" : "",
     backendPort: process.env.NODE_ENV === "development" ? 5000 : 443,
     assetsSubDirectory: "static",
     assetsPublicPath: "/",
