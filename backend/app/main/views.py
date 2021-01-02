@@ -337,10 +337,8 @@ def login():
 def refresh_token():
     # create the new access token
     mentor_id = get_jwt_identity()
-    # access_token = request.headers["Cookie"].split(";")[0].split("=")[1]
 
     # get mentor
-    # mentor_id = decode_token(access_token)["identity"]
     mentor = get_mentor_by_id(mentor_id)
 
     # check if valid mentor
