@@ -16,7 +16,6 @@ from flask_jwt_extended import (
     decode_token,
 )
 from app.models import Mentor, Client
-from app.email import send_email
 from . import main
 
 
@@ -89,14 +88,7 @@ def get_mentor_by_id(id):
 @main.route("/mentors/email/<email>", methods=["GET"])
 @jwt_required
 def get_mentor_by_email(email):
-    response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors?filterByFormula=SEARCH('{}'".format(
-            email
-        )
-        + ", {Move Up Email})",
-        headers={"Authorization": str(os.environ.get("API_KEY"))},
-    )
-    # Convert to JSON
+    response = get_mentor_response_by_email(email)
     response_json = response.json()
     # Validation check
     if (response.status_code // 100) != 2:
@@ -284,23 +276,6 @@ def get_client_notes(id):
     return "Failed to get client's notes", 400
 
 
-# send emails by calling send_mail from email.py
-@main.route("/send-email", methods=["POST"])
-@jwt_required
-def send_mail():
-    # get email recipients and subject from the POST request
-    data = request.get_json(force=True)
-    recipients = data.get("recipients")
-    subject = data.get("subject")
-    body = data.get("body")
-
-    if recipients is None or subject is None:
-        abort(400, "Recipient(s) and subject cannot be empty")
-
-    send_email(recipients, subject, body)
-    return "message sent!"
-
-
 # log in an existing user
 @main.route("/auth/login", methods=["POST"])
 def login():
@@ -309,27 +284,31 @@ def login():
     email = data.get("email")
 
     # get mentor
-    mentor = get_mentor_by_email(email)
+    response = get_mentor_response_by_email(email)
+    response_json = response.json()
+    # Validation check
+    if (response.status_code // 100) != 2:
+        return response_json["error"], response.status_code
 
-    # check if valid mentor
-    if mentor[1] == 200:
-        # create user
-        user_info = json.loads(mentor[0].response[0])
-        user = Mentor(
-            name=user_info["name"], email=user_info["email"], id_number=user_info["id"]
-        )
-        # create tokens
-        access_token = create_access_token(identity=user.id_number)
-        refresh_token = create_refresh_token(identity=user.id_number)
+    # Get object's parameters
+    id_number = response_json["records"][0]["id"]
+    name = response_json["records"][0]["fields"].get("Name")
+    email = response_json["records"][0]["fields"].get("Move Up Email")
+    if name is None or email is None:
+        return "There is no mentor with that email. Please try again.", 400
 
-        # set cookies
-        resp = jsonify({"user": user.serialize()})
-        set_access_cookies(resp, access_token)
-        set_refresh_cookies(resp, refresh_token)
+    mentor = Mentor(name=name, email=email, id_number=id_number)
 
-        return resp, 200
+    # create tokens
+    access_token = create_access_token(identity=mentor.id_number)
+    refresh_token = create_refresh_token(identity=mentor.id_number)
 
-    return "Wrong email or password!", 400
+    # set cookies
+    resp = jsonify({"user": mentor.serialize()})
+    set_access_cookies(resp, access_token)
+    set_refresh_cookies(resp, refresh_token)
+
+    return resp, 200
 
 
 @main.route("/auth/token/refresh", methods=["POST"])
@@ -339,24 +318,30 @@ def refresh_token():
     mentor_id = get_jwt_identity()
 
     # get mentor
-    mentor = get_mentor_by_id(mentor_id)
+    response = get_mentor_response_by_id(mentor_id)
+    response_json = response.json()
 
-    # check if valid mentor
-    if mentor[1] == 200:
-        # create user
-        user_info = json.loads(mentor[0].response[0])
-        access_token = create_access_token(identity=mentor_id)
+    # Validation check
+    if (response.status_code // 100) != 2:
+        return response_json["error"], response.status_code
 
-        user = Mentor(
-            name=user_info["name"], email=user_info["email"], id_number=user_info["id"]
-        )
-        # set the JWT access cookie in the response
-        resp = jsonify({"user": user.serialize()})
-        set_access_cookies(resp, access_token)
+    # Get object's parameters
+    id_number = response_json["id"]
+    name = response_json["fields"].get("Name")
+    email = response_json["fields"].get("Move Up Email")
+    if name is None or email is None:
+        return "There is no mentor with that email. Please try again.", 400
 
-        return resp, 200
+    mentor = Mentor(name=name, email=email, id_number=id_number)
 
-    return "Invalid ID", 400
+    # create user
+    access_token = create_access_token(identity=mentor_id)
+
+    # set the JWT access cookie in the response
+    resp = jsonify({"user": mentor.serialize()})
+    set_access_cookies(resp, access_token)
+
+    return resp, 200
 
 
 # log out an existing user
@@ -369,6 +354,23 @@ def logout():
 
 
 ### HELPER METHODS ###
+
+
+def get_mentor_response_by_email(email):
+    return requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors?filterByFormula=SEARCH('{}'".format(
+            email
+        )
+        + ", {Move Up Email})",
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
+
+
+def get_mentor_response_by_id(id):
+    return requests.get(
+        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors/{}".format(id),
+        headers={"Authorization": str(os.environ.get("API_KEY"))},
+    )
 
 
 def handleEmailResponse(res):
@@ -388,7 +390,6 @@ def handleEmailResponse(res):
         return errorMsg
 
 
-# SECURITY WARNING: Susceptible to DDoS Attack
 def repeat_pagination(response_json, userRole, getResponse):
     while "offset" in response_json:
         offset = response_json["offset"]
