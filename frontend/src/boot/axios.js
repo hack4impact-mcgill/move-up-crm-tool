@@ -14,7 +14,8 @@ Vue.prototype.$axios = axios.create({
   headers: {
     "Access-Control-Allow-Origin": frontendUrl,
     "Content-Type": "application/json"
-  }
+  },
+  withCredentials: true
 });
 
 // set up interceptor to handle expired access tokens

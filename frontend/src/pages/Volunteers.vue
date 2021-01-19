@@ -26,34 +26,23 @@
         </q-input>
       </template>
     </q-table>
-    <!-- Email Volunteer Button -->
+    <!-- Copy Volunteer Emails Button -->
     <div class="q-pa-md email-btn">
       <q-btn
         icon="email"
-        label="Email Selected Volunteers"
+        label="Copy Selected Emails"
         stack
         color="accent"
         style="padding: 7px;"
-        @click="getSelectedEmail"
+        @click="copySelectedEmails"
       />
-
-      <q-dialog v-model="showEmailPopup">
-        <EmailPopup
-          :selected="selected"
-          :allEmails="allEmails"
-          @dialog-closed="showEmailPopup = false"
-        />
-      </q-dialog>
     </div>
   </div>
 </template>
 
 <script>
-import EmailPopup from "../components/EmailPopup.vue";
-
 export default {
   name: "Volunteers",
-  components: { EmailPopup },
   data() {
     return {
       showEmailPopup: false,
@@ -75,7 +64,7 @@ export default {
           align: "left",
           label: "Email",
           field: "email"
-        },
+        }
       ]
     };
   },
@@ -83,7 +72,7 @@ export default {
     //Get all volunteers from backend
     getVolunteers() {
       this.$axios
-        .get("/mentors")  //volunteers == mentors
+        .get("/mentors") //volunteers == mentors
         .then(res => {
           this.volunteers = res.data;
           // Add all of volunteers' emails into allEmails list
@@ -101,8 +90,18 @@ export default {
           });
         });
     },
-    getSelectedEmail: function() {
-      this.showEmailPopup = true;
+    copySelectedEmails: function() {
+      const selectedEmails = this.selected.map(item => item.email);
+      const selectedEmailsString = selectedEmails.join(", ");
+      navigator.clipboard.writeText(selectedEmailsString);
+
+      this.$q.notify({
+        color: "grey-10",
+        position: "top",
+        textColor: "white",
+        icon: "assignment_turned_in",
+        message: "Emails copied to clipboard"
+      });
     }
   },
   created() {

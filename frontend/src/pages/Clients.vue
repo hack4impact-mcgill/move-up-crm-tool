@@ -25,40 +25,30 @@
           </template>
         </q-input>
       </template>
-      <!--Expand Button-->
+      <!-- Expand Button -->
       <q-td slot="body-cell-expand" slot-scope="props" :props="props">
         <q-btn @click="rowExpand(props.row)" flat icon="aspect_ratio" />
       </q-td>
     </q-table>
-    <!-- Email Client Button -->
+    <!-- Copy Client Emails Button -->
     <div class="q-pa-md email-btn">
       <q-btn
         icon="email"
-        label="Email Selected Clients"
+        label="Copy Selected Emails"
         stack
         color="accent"
         style="padding: 7px;"
-        @click="getSelectedEmail"
+        @click="copySelectedEmails"
       />
-
-      <q-dialog v-model="showEmailPopup">
-        <EmailPopup
-          :selected="selected"
-          :allEmails="allEmails"
-          @dialog-closed="showEmailPopup = false"
-        />
-      </q-dialog>
     </div>
   </div>
 </template>
 
 <script>
 import ClientPopup from "../components/ClientPopup.vue";
-import EmailPopup from "../components/EmailPopup.vue";
 
 export default {
   name: "Clients",
-  components: { EmailPopup },
   data() {
     return {
       showEmailPopup: false,
@@ -134,8 +124,18 @@ export default {
           });
         });
     },
-    getSelectedEmail: function() {
-      this.showEmailPopup = true;
+    copySelectedEmails: function() {
+      const selectedEmails = this.selected.map(item => item.email);
+      const selectedEmailsString = selectedEmails.join(", ");
+      navigator.clipboard.writeText(selectedEmailsString);
+
+      this.$q.notify({
+        color: "grey-10",
+        position: "top",
+        textColor: "white",
+        icon: "assignment_turned_in",
+        message: "Emails copied to clipboard"
+      });
     }
   },
   created() {
