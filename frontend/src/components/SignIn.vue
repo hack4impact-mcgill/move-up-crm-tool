@@ -19,12 +19,12 @@ export default {
     window.gapi.signin2.render("signin-button", {
       onsuccess: this.onSignIn
     });
-    this.signedIn = this.$store.getters.getSign;
+    this.signedIn = this.$store.getters.getSignedIn;
   },
   computed: {
     signedInState() {
       // Compute and watch auth state from Vuex
-      let sign = this.$store.getters.getSign;
+      let sign = this.$store.getters.getSignedIn;
       return sign;
     }
   },
@@ -36,21 +36,20 @@ export default {
   methods: {
     async onSignIn() {
       // Sign into Google OAuth and retrieve profile
-      let auth2 = window.gapi.auth2.getAuthInstance();
-      let user = auth2.currentUser.get().getBasicProfile();
+      const auth2 = window.gapi.auth2.getAuthInstance();
+      const user = auth2.currentUser.get().getBasicProfile();
+      const idToken = auth2.currentUser.get().getAuthResponse().id_token;
       // Update state and navigate to Home page
       this.$store
-        .dispatch("login", user)
+        .dispatch("login", { email: user.getEmail(), token: idToken })
         .then(() => {
           const path = "/home";
           if (this.$router.currentRoute.path !== path) {
             this.$router.push({ path });
           }
         })
-        .catch(() => {
-          alert(
-            "No Move Up user exists for this Google account! Please add user info to Airtable to log in."
-          );
+        .catch(err => {
+          alert(err.response.data);
         });
     },
     onSignOut() {

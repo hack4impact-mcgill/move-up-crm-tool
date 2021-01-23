@@ -16,6 +16,8 @@ from flask_jwt_extended import (
     decode_token,
 )
 from app.models import Mentor, Client
+from google.oauth2 import id_token
+from google.auth.transport.requests import Request
 from . import main
 
 
@@ -282,6 +284,12 @@ def login():
     # required in body: email: String
     data = request.get_json(force=True)
     email = data.get("email")
+    token = data.get("token")
+
+    try:
+        id_token.verify_oauth2_token(token, Request(), os.getenv("GOOGLE_CLIENT_ID"))
+    except ValueError:
+        return "Invalid Google ID token!", 400
 
     # get mentor
     response = get_mentor_response_by_email(email)
@@ -290,12 +298,16 @@ def login():
     if (response.status_code // 100) != 2:
         return response_json["error"], response.status_code
 
+    if len(response_json["records"]) == 0:
+        return (
+            "No Move Up user exists for this Google account! Please add user info to Airtable to log in.",
+            400,
+        )
+
     # Get object's parameters
     id_number = response_json["records"][0]["id"]
     name = response_json["records"][0]["fields"].get("Name")
     email = response_json["records"][0]["fields"].get("Move Up Email")
-    if name is None or email is None:
-        return "There is no mentor with that email. Please try again.", 400
 
     mentor = Mentor(name=name, email=email, id_number=id_number)
 
