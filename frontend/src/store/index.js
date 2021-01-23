@@ -26,7 +26,7 @@ const Store = new Vuex.Store({
     userExists: false
   },
   getters: {
-    getSign(state) {
+    getSignedIn(state) {
       return state.userExists;
     }
   },
@@ -53,14 +53,12 @@ const Store = new Vuex.Store({
     }
   },
   actions: {
-    login({ commit }, user) {
+    login({ commit }, loginBody) {
       return new Promise((resolve, reject) => {
         commit("auth_request");
-        const email = user.getEmail();
-        const id = user.getId();
         AXIOS.post(
           "/auth/login",
-          { email: email, id: id },
+          { email: loginBody.email, token: loginBody.token },
           { withCredentials: true }
         )
           .then(resp => {
