@@ -3,9 +3,11 @@ import requests
 import os
 import re
 import json
+from datetime import datetime, timedelta, timezone
 from flask import Flask, Blueprint, jsonify, request, abort, make_response, current_app
 from flask_jwt_extended import (
     jwt_required,
+    get_jwt,
     create_access_token,
     create_refresh_token,
     get_jwt_identity,
@@ -21,6 +23,22 @@ from google.auth.transport.requests import Request
 from flask import Blueprint
 
 main = Blueprint("main", __name__)
+
+# Using an `after_request` callback, we refresh any token that is within 30
+# minutes of expiring.
+@main.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original respone
+        return response
 
 
 @main.route("/", methods=["GET"])
@@ -63,8 +81,8 @@ def get_all_mentors():
     return jsonify(list_of_mentors), 200
 
 
-# # Get a mentor by id from Airtable
-# # SECURITY WARNING: Exposing database id in a URL
+# Get a mentor by id from Airtable
+# SECURITY WARNING: Exposing database id in a URL
 @main.route("/mentors/<id>", methods=["GET"])
 @jwt_required()
 def get_mentor_by_id(id):
@@ -330,39 +348,6 @@ def login():
     resp = jsonify({"user": mentor.serialize()})
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
-
-    return resp, 200
-
-
-@main.route("/auth/token/refresh", methods=["POST"])
-@jwt_required(refresh=True)
-def refresh_token():
-    # create the new access token
-    mentor_id = get_jwt_identity()
-
-    # get mentor
-    response = get_mentor_response_by_id(mentor_id)
-    response_json = response.json()
-
-    # Validation check
-    if (response.status_code // 100) != 2:
-        return response_json["error"], response.status_code
-
-    # Get object's parameters
-    id_number = response_json["id"]
-    name = response_json["fields"].get("Name")
-    email = response_json["fields"].get("Move Up Email")
-    if name is None or email is None:
-        return "There is no mentor with that email. Please try again.", 400
-
-    mentor = Mentor(name=name, email=email, id_number=id_number)
-
-    # create user
-    access_token = create_access_token(identity=mentor_id)
-
-    # set the JWT access cookie in the response
-    resp = jsonify({"user": mentor.serialize()})
-    set_access_cookies(resp, access_token)
 
     return resp, 200
 
