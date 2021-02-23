@@ -352,6 +352,34 @@ def login():
     return resp, 200
 
 
+# get current logged-in user
+@main.route("/auth/current-user", methods=["GET"])
+def get_current_auth_user():
+    mentor_id = get_jwt_identity()
+
+    # get mentor
+    response = get_mentor_response_by_id(mentor_id)
+    response_json = response.json()
+    # Validation check
+    if (response.status_code // 100) != 2:
+        return response_json["error"], response.status_code
+
+    if len(response_json["records"]) == 0:
+        return (
+            "No Move Up user exists for this Google account! Please add user info to Airtable to log in.",
+            400,
+        )
+
+    # Get object's parameters
+    id_number = response_json["records"][0]["id"]
+    name = response_json["records"][0]["fields"].get("Name")
+    email = response_json["records"][0]["fields"].get("Move Up Email")
+
+    mentor = Mentor(name=name, email=email, id_number=id_number)
+
+    return jsonify({"user": mentor.serialize()}), 200
+
+
 # log out an existing user
 @main.route("/auth/logout", methods=["POST"])
 @jwt_required()

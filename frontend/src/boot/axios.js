@@ -20,14 +20,14 @@ Vue.prototype.$axios = axios.create({
 
 // set up interceptor to handle expired access tokens
 Vue.prototype.$axios.interceptors.response.use(
-  function (response) {
+  function(response) {
     return response;
   },
-  function (error) {
+  function(error) {
     if (error.response.status === 401) {
       // get user with stored token
-      axios
-        .post("/auth/token/refresh", null, {
+      this.$axios
+        .get("/auth/current-user", null, {
           headers: {
             "X-CSRF-TOKEN": Cookies.get("csrf_refresh_token")
           }
