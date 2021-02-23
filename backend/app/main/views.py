@@ -3,11 +3,10 @@ import requests
 import os
 import re
 import json
-from flask import Flask, jsonify, request, abort, make_response
+from flask import Flask, Blueprint, jsonify, request, abort, make_response, current_app
 from flask_jwt_extended import (
     jwt_required,
     create_access_token,
-    jwt_refresh_token_required,
     create_refresh_token,
     get_jwt_identity,
     set_access_cookies,
@@ -18,20 +17,26 @@ from flask_jwt_extended import (
 from app.models import Mentor, Client
 from google.oauth2 import id_token
 from google.auth.transport.requests import Request
-from . import main
+
+from flask import Blueprint
+
+main = Blueprint("main", __name__)
 
 
 @main.route("/", methods=["GET"])
 def index():
-    return "Welcome to the Move Up CRM Tool backend!"
+    is_prod = current_app.config["PRODUCTION"]
+    return "Welcome to the Move Up CRM Tool backend! Running in production: {}".format(is_prod)
 
 
 # Get all mentors from Airtable
 @main.route("/mentors", methods=["GET"])
 @jwt_required
 def get_all_mentors():
+    # current_app is only available in the context of a request
+    base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors",
+        "{}/Mentors".format(base_url),
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     # Convert to JSON
@@ -58,13 +63,14 @@ def get_all_mentors():
     return jsonify(list_of_mentors), 200
 
 
-# Get a mentor by id from Airtable
-# SECURITY WARNING: Exposing database id in a URL
+# # Get a mentor by id from Airtable
+# # SECURITY WARNING: Exposing database id in a URL
 @main.route("/mentors/<id>", methods=["GET"])
-@jwt_required
+# @jwt_required
 def get_mentor_by_id(id):
+    base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors/{}".format(id),
+        "{}/Mentors/{}".format(base_url, id),
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     # Convert to JSON
@@ -116,8 +122,9 @@ def get_mentor_by_email(email):
 @main.route("/clients", methods=["GET"])
 @jwt_required
 def get_all_clients():
+    base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients",
+        "{}/Clients".format(base_url),
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     # Convert to JSON
@@ -159,8 +166,9 @@ def get_all_clients():
 @main.route("/clients/<id>", methods=["GET"])
 @jwt_required
 def get_a_client(id):
+    base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
+        "{}/Clients/{}".format(base_url, id),
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
     # Convert to JSON
@@ -194,8 +202,10 @@ def get_a_client(id):
 @main.route("/clients/email/<email>", methods=["GET"])
 @jwt_required
 def get_a_client_from_email(email):
+    base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
+        "{}/Clients?filterByFormula=SEARCH('{}'".format(
+            base_url,
             email
         )
         + ", {Client Email})",
@@ -236,6 +246,7 @@ def get_a_client_from_email(email):
 @main.route("/notes/<id>", methods=["GET"])
 @jwt_required
 def get_client_notes(id):
+    base_url = current_app.config["DATABASE_URL"]
     # Regex used to check if string input is an email address
     regex = "^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
     email_input = re.search(regex, id)
@@ -246,7 +257,8 @@ def get_client_notes(id):
     if email_input:
         # id is an email. Collect client notes by email
         response = requests.get(
-            "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients?filterByFormula=SEARCH('{}'".format(
+            "{}/Clients?filterByFormula=SEARCH('{}'".format(
+                base_url, 
                 id
             )
             + ", {Client Email})",
@@ -255,12 +267,11 @@ def get_client_notes(id):
     elif id_input:
         # id is an id. Collect notes by id
         response = requests.get(
-            "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Clients/{}".format(id),
+            "{}/Clients/{}".format(base_url, id),
             headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
     else:
-        # Return failure
-        return "Bad id/email", 400
+        return "Invalid id/email", 400
 
     if response.status_code == 200:
         response_json = response.json()
@@ -324,7 +335,7 @@ def login():
 
 
 @main.route("/auth/token/refresh", methods=["POST"])
-@jwt_refresh_token_required
+@jwt_required(refresh=True)
 def refresh_token():
     # create the new access token
     mentor_id = get_jwt_identity()
@@ -369,8 +380,10 @@ def logout():
 
 
 def get_mentor_response_by_email(email):
+    base_url = current_app.config["DATABASE_URL"]
     return requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors?filterByFormula=SEARCH('{}'".format(
+        "{}/Mentors?filterByFormula=SEARCH('{}'".format(
+            base_url,
             email
         )
         + ", {Move Up Email})",
@@ -379,8 +392,9 @@ def get_mentor_response_by_email(email):
 
 
 def get_mentor_response_by_id(id):
+    base_url = current_app.config["DATABASE_URL"]
     return requests.get(
-        "https://api.airtable.com/v0/appw4RRMDig1g2PFI/Mentors/{}".format(id),
+        "{}/Mentors/{}".format(base_url, id),
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
 
@@ -389,29 +403,28 @@ def handleEmailResponse(res):
     if (len(res)) == 0:
         return "No records in this database."
     elif (len(res)) > 1:
-        errorMsg = (
+        error_msg = (
             "The email address is associated to "
             + str(len(res))
             + " names. It appears for"
         )
         for i in range(len(res)):
             if i == len(res) - 1:
-                errorMsg += " and " + res[i]["fields"].get("Name") + "."
+                error_msg += " and " + res[i]["fields"].get("Name") + "."
             else:
-                errorMsg += " " + res[i]["fields"].get("Name") + ","
-        return errorMsg
+                error_msg += " " + res[i]["fields"].get("Name") + ","
+        return error_msg
 
 
-def repeat_pagination(response_json, userRole, getResponse):
+def repeat_pagination(response_json, user_role, get_response):
     while "offset" in response_json:
+        base_url = current_app.config["DATABASE_URL"]
         offset = response_json["offset"]
         response = requests.get(
             (
-                "https://api.airtable.com/v0/appw4RRMDig1g2PFI/"
-                + userRole
-                + "?offset={}"
-            ).format(offset),
+                "{}/{}?offset={}"
+            ).format(base_url, user_role, offset),
             headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
         response_json = response.json()
-        getResponse()
+        get_response()
