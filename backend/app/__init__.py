@@ -12,7 +12,7 @@ def create_app(config_name):
     CORS(
         app,
         supports_credentials=True,
-        resources={r"/*": {"origins": [r"http://localhost:*", r"http://127.0.0.1:*",]}},
+        resources={r"/*": {"origins": [r"http://localhost:*", r"http://127.0.0.1:*"]}},
     )
 
     # get config from env

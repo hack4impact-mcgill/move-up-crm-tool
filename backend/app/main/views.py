@@ -44,7 +44,9 @@ def refresh_expiring_jwts(response):
 @main.route("/", methods=["GET"])
 def index():
     is_prod = current_app.config.get("PRODUCTION") or False
-    return "Welcome to the Move Up CRM Tool backend! Running in production: {}".format(is_prod)
+    return "Welcome to the Move Up CRM Tool backend! Running in production: {}".format(
+        is_prod
+    )
 
 
 # Get all mentors from Airtable
@@ -222,10 +224,7 @@ def get_a_client(id):
 def get_a_client_from_email(email):
     base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
-        "{}/Clients?filterByFormula=SEARCH('{}'".format(
-            base_url,
-            email
-        )
+        "{}/Clients?filterByFormula=SEARCH('{}'".format(base_url, email)
         + ", {Client Email})",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
@@ -275,10 +274,7 @@ def get_client_notes(id):
     if email_input:
         # id is an email. Collect client notes by email
         response = requests.get(
-            "{}/Clients?filterByFormula=SEARCH('{}'".format(
-                base_url, 
-                id
-            )
+            "{}/Clients?filterByFormula=SEARCH('{}'".format(base_url, id)
             + ", {Client Email})",
             headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
@@ -354,6 +350,7 @@ def login():
 
 # get current logged-in user
 @main.route("/auth/current-user", methods=["GET"])
+@jwt_required()
 def get_current_auth_user():
     mentor_id = get_jwt_identity()
 
@@ -395,10 +392,7 @@ def logout():
 def get_mentor_response_by_email(email):
     base_url = current_app.config["DATABASE_URL"]
     return requests.get(
-        "{}/Mentors?filterByFormula=SEARCH('{}'".format(
-            base_url,
-            email
-        )
+        "{}/Mentors?filterByFormula=SEARCH('{}'".format(base_url, email)
         + ", {Move Up Email})",
         headers={"Authorization": str(os.environ.get("API_KEY"))},
     )
@@ -434,9 +428,7 @@ def repeat_pagination(response_json, user_role, get_response):
         base_url = current_app.config["DATABASE_URL"]
         offset = response_json["offset"]
         response = requests.get(
-            (
-                "{}/{}?offset={}"
-            ).format(base_url, user_role, offset),
+            ("{}/{}?offset={}").format(base_url, user_role, offset),
             headers={"Authorization": str(os.environ.get("API_KEY"))},
         )
         response_json = response.json()

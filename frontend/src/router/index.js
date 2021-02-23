@@ -6,18 +6,6 @@ import Store from "../store/index";
 
 Vue.use(VueRouter);
 
-// Axios config
-// const frontendUrl = config.build.host + ":" + config.build.port;
-// const backendUrl = config.build.backendHost + ":" + config.build.backendPort;
-
-// var AXIOS = axios.create({
-//   baseURL: backendUrl,
-//   headers: {
-//     "Access-Control-Allow-Origin": frontendUrl,
-//     "Content-Type": "application/json"
-//   }
-// });
-
 /*
  * If not building with SSR mode, you can
  * directly export the Router instantiation;
