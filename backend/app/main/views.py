@@ -25,13 +25,13 @@ main = Blueprint("main", __name__)
 
 @main.route("/", methods=["GET"])
 def index():
-    is_prod = current_app.config["PRODUCTION"]
+    is_prod = current_app.config.get("PRODUCTION") or False
     return "Welcome to the Move Up CRM Tool backend! Running in production: {}".format(is_prod)
 
 
 # Get all mentors from Airtable
 @main.route("/mentors", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_all_mentors():
     # current_app is only available in the context of a request
     base_url = current_app.config["DATABASE_URL"]
@@ -66,7 +66,7 @@ def get_all_mentors():
 # # Get a mentor by id from Airtable
 # # SECURITY WARNING: Exposing database id in a URL
 @main.route("/mentors/<id>", methods=["GET"])
-# @jwt_required
+@jwt_required()
 def get_mentor_by_id(id):
     base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
@@ -94,7 +94,7 @@ def get_mentor_by_id(id):
 
 # Get a mentor by email from Airtable
 @main.route("/mentors/email/<email>", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_mentor_by_email(email):
     response = get_mentor_response_by_email(email)
     response_json = response.json()
@@ -120,7 +120,7 @@ def get_mentor_by_email(email):
 
 # Get all clients from Airtable
 @main.route("/clients", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_all_clients():
     base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
@@ -164,7 +164,7 @@ def get_all_clients():
 # Get a client from Airtable
 # SECURITY WARNING: Exposing database id in a URL
 @main.route("/clients/<id>", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_a_client(id):
     base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
@@ -200,7 +200,7 @@ def get_a_client(id):
 
 # Get a client from Airtable using client's email
 @main.route("/clients/email/<email>", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_a_client_from_email(email):
     base_url = current_app.config["DATABASE_URL"]
     response = requests.get(
@@ -244,7 +244,7 @@ def get_a_client_from_email(email):
 
 # Gets list of client notes based on clientid or email
 @main.route("/notes/<id>", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_client_notes(id):
     base_url = current_app.config["DATABASE_URL"]
     # Regex used to check if string input is an email address
@@ -369,7 +369,7 @@ def refresh_token():
 
 # log out an existing user
 @main.route("/auth/logout", methods=["POST"])
-@jwt_required
+@jwt_required()
 def logout():
     resp = jsonify("Logged out successfully")
     unset_jwt_cookies(resp)
