@@ -371,6 +371,8 @@ def get_current_auth_user():
     id_number = response_json["records"][0]["id"]
     name = response_json["records"][0]["fields"].get("Name")
     email = response_json["records"][0]["fields"].get("Move Up Email")
+    if name is None or email is None:
+        return "There is no Move Up mentor with that email.", 400
 
     mentor = Mentor(name=name, email=email, id_number=id_number)
 
