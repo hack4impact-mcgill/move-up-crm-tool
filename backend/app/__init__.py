@@ -12,7 +12,7 @@ def create_app(config_name):
     CORS(
         app,
         supports_credentials=True,
-        resources={r"/*": {"origins": [r"http://localhost:*", r"http://127.0.0.1:*",]}},
+        resources={r"/*": {"origins": [r"http://localhost:*", r"http://127.0.0.1:*"]}},
     )
 
     # get config from env
@@ -31,7 +31,7 @@ def create_app(config_name):
     jwt.init_app(app)
 
     # create app blueprint
-    from .main import main as main_blueprint
+    from .main.views import main as main_blueprint
 
     app.register_blueprint(main_blueprint)
 
